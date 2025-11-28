@@ -1,0 +1,161 @@
+<?php
+session_start();
+header('Content-Type: application/json');
+require_once 'db.php';
+
+// Check authentication
+if (!isset($_SESSION['user_id'])) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Unauthorized']);
+    exit;
+}
+
+$user_id = $_SESSION['user_id'];
+$method = $_SERVER['REQUEST_METHOD'];
+
+// GET: Fetch all movies for the user
+if ($method === 'GET') {
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM movies WHERE user_id = ? ORDER BY created_at DESC");
+        $stmt->execute([$user_id]);
+        $movies = $stmt->fetchAll();
+        
+        // Decode platforms JSON
+        foreach ($movies as &$movie) {
+            $movie['platforms'] = json_decode($movie['platforms'], true) ?: [];
+        }
+        
+        echo json_encode($movies);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to fetch movies']);
+    }
+}
+
+// POST: Add a new movie
+elseif ($method === 'POST') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    
+    if (!$data || !isset($data['title'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid input']);
+        exit;
+    }
+
+    try {
+        $stmt = $pdo->prepare("
+            INSERT INTO movies (user_id, title, year, genre, image_url, trailer_url, description, rating, platforms, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+        
+        $platformsJson = json_encode($data['platforms'] ?? []);
+        $status = $data['status'] ?? 'to_watch';
+        
+        $stmt->execute([
+            $user_id,
+            trim($data['title']),
+            $data['year'] ?? '',
+            $data['genre'] ?? '',
+            $data['image_url'] ?? '',
+            $data['trailer_url'] ?? '',
+            $data['description'] ?? '',
+            $data['rating'] ?? '',
+            $platformsJson,
+            $status
+        ]);
+        
+        $id = $pdo->lastInsertId();
+        
+        // Fetch the created movie to return it
+        $stmt = $pdo->prepare("SELECT * FROM movies WHERE id = ?");
+        $stmt->execute([$id]);
+        $movie = $stmt->fetch();
+        $movie['platforms'] = json_decode($movie['platforms'], true);
+        
+        echo json_encode($movie);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to save movie']);
+    }
+}
+
+// PUT: Update a movie (status or platforms)
+elseif ($method === 'PUT') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    
+    if (!$data || !isset($data['id'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'ID required']);
+        exit;
+    }
+
+    try {
+        // Verify ownership
+        $stmt = $pdo->prepare("SELECT id FROM movies WHERE id = ? AND user_id = ?");
+        $stmt->execute([$data['id'], $user_id]);
+        if (!$stmt->fetch()) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Permission denied']);
+            exit;
+        }
+
+        // Build dynamic update query
+        $fields = [];
+        $params = [];
+        
+        if (isset($data['status'])) {
+            $fields[] = "status = ?";
+            $params[] = $data['status'];
+        }
+        
+        if (isset($data['platforms'])) {
+            $fields[] = "platforms = ?";
+            $params[] = json_encode($data['platforms']);
+        }
+        
+        // Add other fields if needed in future
+        
+        if (empty($fields)) {
+            echo json_encode(['success' => true]); // Nothing to update
+            exit;
+        }
+        
+        $params[] = $data['id']; // For WHERE clause
+        
+        $sql = "UPDATE movies SET " . implode(', ', $fields) . " WHERE id = ?";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        
+        echo json_encode(['success' => true]);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Update failed']);
+    }
+}
+
+// DELETE: Delete a movie
+elseif ($method === 'DELETE') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    
+    if (!$data || !isset($data['id'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'ID required']);
+        exit;
+    }
+
+    try {
+        $stmt = $pdo->prepare("DELETE FROM movies WHERE id = ? AND user_id = ?");
+        $stmt->execute([$data['id'], $user_id]);
+        
+        if ($stmt->rowCount() > 0) {
+            echo json_encode(['success' => true]);
+        } else {
+            http_response_code(404);
+            echo json_encode(['error' => 'Movie not found or permission denied']);
+        }
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Delete failed']);
+    }
+}
+?>

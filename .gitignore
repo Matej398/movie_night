@@ -1,0 +1,18 @@
+# Dependency directories
+node_modules/
+vendor/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Local config
+config.php
+.env
+
+# Data (optional, if you want to keep data local)
+# data/
