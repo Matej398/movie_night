@@ -346,11 +346,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 const index = movies.findIndex(m => m.id === tempId);
                 if (index !== -1) {
                     movies[index] = savedMovie;
-                    // Update DOM element ID if needed, or just re-render silently
-                    // Updating cache is crucial
+                    // Update cache
                     localStorage.setItem('movies_cache', JSON.stringify(movies));
                     
+                    // Update the DOM element with the real ID so it becomes clickable
+                    const tempCard = document.querySelector(`.movie-card[data-movie-id="${tempId}"]`);
+                    if (tempCard) {
+                        tempCard.dataset.movieId = savedMovie.id;
+                        // Update any specific visual state if needed, but the ID is key for the delegate listener
+                    } else {
+                        // Fallback: just re-render if card not found for some reason
+                        renderMovies(false);
+                    }
+                    
                     // Check streaming platforms in background
+                    console.log('Checking platforms for:', savedMovie.title);
                     checkStreamingPlatforms(savedMovie.title, savedMovie.year, savedMovie.id);
                     
                     showToast('Movie saved!', 'success');
@@ -369,34 +379,40 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     async function checkStreamingPlatforms(title, year, movieId) {
+        console.log(`Starting platform check for ${title} (${year}) ID: ${movieId}`);
         try {
             const platformUrl = `${STREAMING_CHECK_URL}?title=${encodeURIComponent(title)}${year ? '&year=' + encodeURIComponent(year) : ''}`;
             const res = await fetch(platformUrl);
             if (res.ok) {
                 const data = await res.json();
+                console.log('Platform check result:', data);
                 if (data.platforms && data.platforms.length > 0) {
-                    const movie = movies.find(m => m.id === movieId);
+                    const movie = movies.find(m => String(m.id) === String(movieId));
                     if (movie) {
                         movie.platforms = data.platforms;
                         localStorage.setItem('movies_cache', JSON.stringify(movies));
+                        
                         // Silently update server
                         fetch(API_URL, {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ id: movieId, platforms: data.platforms })
                         });
-                        // Update UI if visible
-                        const card = document.querySelector(`.movie-card[data-movie-id="${movieId}"]`);
-                        if (card) {
-                            // Re-render just this card or whole list? 
-                            // Whole list is fast enough now
-                            renderMovies(false); 
-                        }
+                        
+                        // Update UI if visible - FORCE re-render of this card to show badges
+                        // We can either re-render the whole list or just update this card's badge area
+                        // Simplest robust way: re-render list (it's fast now)
+                        console.log('Updating UI with new platforms');
+                        renderMovies(false); 
                     }
+                } else {
+                    console.log('No platforms found for', title);
                 }
+            } else {
+                console.error('Platform check API error:', res.status);
             }
         } catch (e) {
-            console.error('Platform check failed', e);
+            console.error('Platform check failed exception:', e);
         }
     }
 
