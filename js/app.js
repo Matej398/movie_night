@@ -177,20 +177,50 @@ document.addEventListener('DOMContentLoaded', () => {
     function getOptimizedImageUrl(url, width = 600) {
         if (!url || !url.includes('media-amazon.com')) return url;
         
-        // Force US CDN (English locale)
-        let cleanUrl = url.replace(/https?:\/\/[^\/]+\.media-amazon\.com/i, 'https://m.media-amazon.com');
-        
-        // Check if it's an IMDb/Amazon image with _V1_ pattern
-        if (cleanUrl.includes('_V1_')) {
-            // Calculate approximate height based on aspect ratio (posters are ~2:3)
+        try {
+            // Extract the base path (everything before _V1_)
+            // IMDb URLs typically: https://[domain].media-amazon.com/images/M/[path]/_V1_[params].jpg
+            const urlObj = new URL(url);
+            let pathParts = urlObj.pathname.split('/');
+            
+            // Find the part with _V1_ or the image filename
+            let basePath = '';
+            let foundV1 = false;
+            
+            for (let i = 0; i < pathParts.length; i++) {
+                if (pathParts[i].includes('_V1_') || pathParts[i].match(/\.jpg$/i)) {
+                    // Extract everything before _V1_ or the filename
+                    basePath = pathParts.slice(0, i).join('/');
+                    foundV1 = true;
+                    break;
+                }
+            }
+            
+            if (!foundV1) {
+                // Fallback: try to extract base path manually
+                const match = url.match(/^(https?:\/\/[^\/]+\.media-amazon\.com\/images\/M\/[^_]+)/i);
+                if (match) {
+                    basePath = match[1].replace(/^https?:\/\/[^\/]+\.media-amazon\.com/i, '');
+                } else {
+                    // Last resort: use original URL but force US CDN
+                    return url.replace(/https?:\/\/[^\/]+\.media-amazon\.com/i, 'https://m.media-amazon.com') + 
+                           (url.includes('?') ? '&' : '?') + '_nc_cat=0&_nc_ohc=0&_nc_ht=m.media-amazon.com';
+                }
+            }
+            
+            // Calculate height for poster aspect ratio (2:3)
             const height = Math.round(width * 1.5);
-            // Replace existing _V1_ parameters with English-optimized version
-            // Pattern: _V1_....jpg -> _V1_QL75_UX{width}_CR0,0,{width},{height}_AL_.jpg
-            // QL75 = quality 75%, UX{width} = width, CR = crop, AL = English locale
-            cleanUrl = cleanUrl.replace(/_V1_.*?\.jpg$/i, `_V1_QL75_UX${width}_CR0,0,${width},${height}_AL_.jpg`);
+            
+            // Force US CDN and rebuild URL with English locale parameters
+            // AL_ = English locale, QL75 = quality, UX = width, CR = crop
+            const englishUrl = `https://m.media-amazon.com${basePath}/_V1_QL75_UX${width}_CR0,0,${width},${height}_AL_.jpg`;
+            
+            return englishUrl;
+        } catch (e) {
+            // If URL parsing fails, try simple replacement
+            console.warn('Image URL transformation failed:', e);
+            return url.replace(/https?:\/\/[^\/]+\.media-amazon\.com/i, 'https://m.media-amazon.com');
         }
-        
-        return cleanUrl;
     }
 
     // --- Add Movie Modal ---
