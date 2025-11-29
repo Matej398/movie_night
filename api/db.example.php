@@ -1,10 +1,10 @@
 <?php
 // Database configuration
-// You should change these values to match your Hostinger setup
+// Copy this file to db.php and fill in your credentials
 $host = 'localhost';
-$dbname = 'cinestash_db';
-$username = 'root';
-$password = '';
+$dbname = 'your_db_name';
+$username = 'your_username';
+$password = 'your_password';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
