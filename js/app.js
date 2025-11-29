@@ -1012,9 +1012,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Search URLs
         const searchUrls = {
             'netflix': 'https://www.netflix.com/search?q=',
-            'disneyplus': 'https://www.disneyplus.com/search?q=',
+            'disneyplus': 'https://www.disneyplus.com/en-gb/browse/search?q=',
             'skyshowtime': 'https://www.skyshowtime.com/search?q=',
-            'hbomax': 'https://play.max.com/search?q=',
+            'hbomax': 'https://play.hbomax.com/search?q=',
             'voyo': 'https://voyo.nova.cz/hledani?q=' // Assuming CZ, adjust if needed
         };
         
@@ -1175,9 +1175,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 platformsContainer.innerHTML = '';
                 platformsContainer.appendChild(badgesContainer);
+                
+                // Always add 1337x.to link after badges
+                const separator = document.createElement('span');
+                separator.textContent = ' | ';
+                separator.style.margin = '0 8px';
+                separator.style.color = 'var(--text-secondary, #999)';
+                platformsContainer.appendChild(separator);
+                
+                const unavailableLink = document.createElement('a');
+                const searchQuery = encodeURIComponent(movie.title);
+                unavailableLink.href = `https://1337x.to/search/${searchQuery}/1/`;
+                unavailableLink.target = '_blank';
+                unavailableLink.rel = 'noopener noreferrer';
+                unavailableLink.textContent = '1337x.to';
+                unavailableLink.style.color = 'var(--accent-color, #007AFF)';
+                unavailableLink.style.textDecoration = 'underline';
+                unavailableLink.style.cursor = 'pointer';
+                unavailableLink.title = `Search "${movie.title}" on 1337x.to`;
+                platformsContainer.appendChild(unavailableLink);
                 platformsContainer.style.display = 'block';
             } else {
-                // Create search link for 1337x.to with movie title
+                // Create search link for 1337x.to with movie title (when no badges)
                 const unavailableLink = document.createElement('a');
                 const searchQuery = encodeURIComponent(movie.title);
                 unavailableLink.href = `https://1337x.to/search/${searchQuery}/1/`;
