@@ -381,70 +381,96 @@ document.addEventListener('DOMContentLoaded', () => {
     async function checkStreamingPlatforms(title, year, movieId) {
         console.log(`Starting platform check for ${title} (${year}) ID: ${movieId}`);
         
-        // CLIENT-SIDE CHECK via CORS Proxy
-        // This bypasses server-side blocking by JustWatch
-        try {
-            const searchQuery = encodeURIComponent(title);
-            const proxyUrl = 'https://api.allorigins.win/get?url=';
-            const targetUrl = encodeURIComponent(`https://www.justwatch.com/si/pretrazi?q=${searchQuery}`);
-            
-            const res = await fetch(proxyUrl + targetUrl);
-            if (res.ok) {
-                const data = await res.json();
-                const html = data.contents; // allorigins returns content in .contents
-                
-                if (html && html.length > 100) {
-                    // 1. Find movie link
-                    const linkMatch = html.match(/href="(\/si\/film\/[^"]+)"/i);
-                    if (linkMatch) {
-                        const moviePath = linkMatch[1];
-                        console.log('Found movie page:', moviePath);
-                        
-                        // 2. Fetch movie page via proxy
-                        const movieTargetUrl = encodeURIComponent(`https://www.justwatch.com${moviePath}`);
-                        const movieRes = await fetch(proxyUrl + movieTargetUrl);
-                        const movieData = await movieRes.json();
-                        const movieHtml = movieData.contents;
-                        
-                        // 3. Parse platforms
-                        const platforms = [];
-                        
-                        // Helper to check text presence
-                        const has = (str) => movieHtml.toLowerCase().includes(str.toLowerCase());
-                        
-                        // Check specifically in the "Stream" or "Flatrate" section logic
-                        // We can look for specific provider names in the HTML
-                        if (has('alt="Netflix"') || has('title="Netflix"')) platforms.push('netflix');
-                        if (has('alt="Disney Plus"') || has('title="Disney Plus"') || has('alt="Disney+"')) platforms.push('disneyplus');
-                        if (has('alt="SkyShowtime"') || has('title="SkyShowtime"')) platforms.push('skyshowtime');
-                        if (has('alt="HBO Max"') || has('title="HBO Max"') || has('alt="Max"')) platforms.push('hbomax');
-                        if (has('alt="Voyo"') || has('title="Voyo"')) platforms.push('voyo');
-                        if (has('alt="Amazon Prime Video"')) platforms.push('amazonprime');
-                        
-                        console.log('Found platforms:', platforms);
-                        
-                        if (platforms.length > 0) {
-                            updateMoviePlatforms(movieId, platforms);
-                        } else {
-                            console.log('No platforms found in HTML for', title);
-                        }
-                    } else {
-                        console.log('Movie not found in JustWatch search results');
+        // Run BOTH server and client checks in parallel for maximum reliability
+        // We don't await the server check before starting the client check
+        
+        // 1. Server Check (Promise)
+        const serverCheck = (async () => {
+            try {
+                const platformUrl = `${STREAMING_CHECK_URL}?title=${encodeURIComponent(title)}${year ? '&year=' + encodeURIComponent(year) : ''}`;
+                const res = await fetch(platformUrl);
+                if (res.ok) {
+                    const data = await res.json();
+                    console.log('Server check result:', data);
+                    if (data.platforms && data.platforms.length > 0) {
+                        updateMoviePlatforms(movieId, data.platforms);
+                        return true;
                     }
                 }
+            } catch (e) {
+                console.error('Server platform check failed:', e);
             }
-        } catch (e) {
-            console.error('Client-side platform check failed:', e);
-        }
+            return false;
+        })();
+
+        // 2. Client Check (Promise)
+        const clientCheck = (async () => {
+            try {
+                const searchQuery = encodeURIComponent(title);
+                const proxyUrl = 'https://api.allorigins.win/get?url=';
+                const targetUrl = encodeURIComponent(`https://www.justwatch.com/si/pretrazi?q=${searchQuery}`);
+                
+                console.log('Starting client-side check via proxy...');
+                const res = await fetch(proxyUrl + targetUrl);
+                if (res.ok) {
+                    const data = await res.json();
+                    const html = data.contents; 
+                    
+                    if (html && html.length > 100) {
+                        const linkMatch = html.match(/href="(\/si\/film\/[^"]+)"/i);
+                        if (linkMatch) {
+                            const moviePath = linkMatch[1];
+                            console.log('Client found movie page:', moviePath);
+                            
+                            const movieTargetUrl = encodeURIComponent(`https://www.justwatch.com${moviePath}`);
+                            const movieRes = await fetch(proxyUrl + movieTargetUrl);
+                            const movieData = await movieRes.json();
+                            const movieHtml = movieData.contents;
+                            
+                            const platforms = [];
+                            const has = (str) => movieHtml.toLowerCase().includes(str.toLowerCase());
+                            
+                            if (has('alt="Netflix"') || has('title="Netflix"')) platforms.push('netflix');
+                            if (has('alt="Disney Plus"') || has('title="Disney Plus"') || has('alt="Disney+"')) platforms.push('disneyplus');
+                            if (has('alt="SkyShowtime"') || has('title="SkyShowtime"')) platforms.push('skyshowtime');
+                            if (has('alt="HBO Max"') || has('title="HBO Max"') || has('alt="Max"')) platforms.push('hbomax');
+                            if (has('alt="Voyo"') || has('title="Voyo"')) platforms.push('voyo');
+                            if (has('alt="Amazon Prime Video"')) platforms.push('amazonprime');
+                            
+                            console.log('Client found platforms:', platforms);
+                            if (platforms.length > 0) {
+                                updateMoviePlatforms(movieId, platforms.map(p => ({ name: p, url: null })));
+                                return true;
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Client-side platform check failed:', e);
+            }
+            return false;
+        })();
+        
+        // We don't really need to wait for them here as they update the UI independently
+        // But tracking them helps debug
+        Promise.allSettled([serverCheck, clientCheck]).then(() => {
+            console.log('All platform checks finished');
+        });
     }
 
     function updateMoviePlatforms(movieId, platforms) {
+        // Normalize platforms input to array of objects
+        // platforms can be strings or objects
+        const platformData = platforms.map(p => {
+            if (typeof p === 'string') return { name: p, url: null };
+            return p;
+        });
+
         const movie = movies.find(m => String(m.id) === String(movieId));
         if (movie) {
-            // Format platforms object if needed (currently simple array of strings)
-            // Ensure we match the structure our app expects
-            const platformData = platforms.map(p => ({ name: p, url: null })); // We can't easily get deep links via scraping
-            
+            // Merge with existing if any? Or overwrite?
+            // Usually overwrite is safer to avoid duplicates, but merging allows accumulating from different sources
+            // Let's overwrite for now to keep it clean
             movie.platforms = platformData;
             localStorage.setItem('movies_cache', JSON.stringify(movies));
             
@@ -457,7 +483,11 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Force re-render
             renderMovies(false);
-            showToast(`Found on: ${platforms.join(', ')}`, 'success');
+            
+            // Show toast only if we actually found something
+            if (platformData.length > 0) {
+                // showToast(`Found streaming on: ${platformData.length} platforms`, 'success');
+            }
         }
     }
 
