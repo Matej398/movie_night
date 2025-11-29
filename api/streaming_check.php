@@ -7,11 +7,11 @@ header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
 // CONFIGURATION
-// Using a common public test key. PLEASE REPLACE with your own from themoviedb.org!
 $tmdbApiKey = '987a9d0095e7c36a87a5f23331724658'; 
 
 $title = $_GET['title'] ?? '';
 $year = $_GET['year'] ?? '';
+$debug = isset($_GET['debug']);
 
 if (empty($title)) {
     echo json_encode(['platforms' => [], 'title' => $title]);
@@ -32,10 +32,14 @@ curl_close($ch);
 
 $data = json_decode($response, true);
 $platforms = [];
+$debugData = [];
 
 if (!empty($data['results'])) {
     // Get the first result's ID
     $movieId = $data['results'][0]['id'];
+    $movieTitle = $data['results'][0]['title'];
+    
+    if ($debug) $debugData['tmdb_match'] = $data['results'][0];
     
     // 2. Get Watch Providers for this movie
     $providersUrl = "https://api.themoviedb.org/3/movie/{$movieId}/watch/providers?api_key={$tmdbApiKey}";
@@ -48,30 +52,45 @@ if (!empty($data['results'])) {
     
     $provData = json_decode($provResponse, true);
     
-    // Check Slovenia (SI) specifically
+    if ($debug) $debugData['providers_raw'] = $provData['results'] ?? 'No results';
+    
+    // Check Slovenia (SI)
+    // If SI is missing, maybe check US or global just to see if API works?
     if (isset($provData['results']['SI'])) {
         $siData = $provData['results']['SI'];
         
-        // Check 'flatrate' (streaming subscription)
-        if (isset($siData['flatrate'])) {
-            foreach ($siData['flatrate'] as $provider) {
-                $name = strtolower($provider['provider_name']);
-                
-                // Map TMDB names to our internal IDs
-                if (strpos($name, 'netflix') !== false) $platforms[] = 'netflix';
-                elseif (strpos($name, 'disney') !== false) $platforms[] = 'disneyplus';
-                elseif (strpos($name, 'sky') !== false) $platforms[] = 'skyshowtime';
-                elseif (strpos($name, 'hbo') !== false || strpos($name, 'max') !== false) $platforms[] = 'hbomax';
-                elseif (strpos($name, 'voyo') !== false) $platforms[] = 'voyo';
-                elseif (strpos($name, 'amazon') !== false) $platforms[] = 'amazonprime';
-            }
+        // Merge all types (flatrate, rent, buy, ads) to find ANY availability
+        $allProviders = [];
+        if (isset($siData['flatrate'])) $allProviders = array_merge($allProviders, $siData['flatrate']);
+        if (isset($siData['rent'])) $allProviders = array_merge($allProviders, $siData['rent']);
+        if (isset($siData['buy'])) $allProviders = array_merge($allProviders, $siData['buy']);
+        if (isset($siData['ads'])) $allProviders = array_merge($allProviders, $siData['ads']); // Free with ads
+        
+        foreach ($allProviders as $provider) {
+            $name = strtolower($provider['provider_name']);
+            
+            // Map TMDB names to our internal IDs
+            if (strpos($name, 'netflix') !== false) $platforms[] = 'netflix';
+            elseif (strpos($name, 'disney') !== false) $platforms[] = 'disneyplus';
+            elseif (strpos($name, 'sky') !== false) $platforms[] = 'skyshowtime';
+            elseif (strpos($name, 'hbo') !== false || strpos($name, 'max') !== false) $platforms[] = 'hbomax';
+            elseif (strpos($name, 'voyo') !== false) $platforms[] = 'voyo';
+            elseif (strpos($name, 'amazon') !== false) $platforms[] = 'amazonprime';
         }
+    } else {
+        if ($debug) $debugData['error'] = 'No SI data found in TMDB response';
     }
 }
 
-echo json_encode([
-    'platforms' => array_unique($platforms),
+$output = [
+    'platforms' => array_values(array_unique($platforms)),
     'title' => $title,
     'tmdb_used' => true
-]);
+];
+
+if ($debug) {
+    $output['debug'] = $debugData;
+}
+
+echo json_encode($output);
 ?>
