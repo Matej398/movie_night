@@ -48,18 +48,39 @@ if ($debug) {
 }
 
 if ($httpCode === 200 && $html && strlen($html) > 100) {
-    // Find movie/TV show link in search results
-    // JustWatch uses patterns like: href="/us/movie/..." or href="/us/tv-show/..."
-    $linkPattern = '/href="(\/us\/(?:movie|tv-show)\/[^"]+)"/i';
+    // Find movie/TV show link in search results - try multiple patterns
+    $moviePath = null;
+    $movieUrl = null;
     
-    if (preg_match($linkPattern, $html, $matches)) {
+    // Pattern 1: Standard href="/us/movie/..." or href="/us/tv-show/..."
+    if (preg_match('/href=["\'](\/us\/(?:movie|tv-show)\/[^"\']+)["\']/i', $html, $matches)) {
         $moviePath = $matches[1];
+    }
+    // Pattern 2: href="/movie/..." or href="/tv-show/..." (without /us/)
+    elseif (preg_match('/href=["\'](\/(?:movie|tv-show)\/[^"\']+)["\']/i', $html, $matches)) {
+        $moviePath = '/us' . $matches[1]; // Add /us prefix
+    }
+    // Pattern 3: data-href or other attributes
+    elseif (preg_match('/(?:data-href|data-url)=["\'](\/us\/(?:movie|tv-show)\/[^"\']+)["\']/i', $html, $matches)) {
+        $moviePath = $matches[1];
+    }
+    // Pattern 4: Full URL
+    elseif (preg_match('/https?:\/\/www\.justwatch\.com\/us\/(?:movie|tv-show)\/[^"\'\s]+/i', $html, $matches)) {
+        $movieUrl = $matches[0];
+    }
+    
+    if ($moviePath && !$movieUrl) {
         $movieUrl = "https://www.justwatch.com{$moviePath}";
-        
-        if ($debug) {
-            $debugData['movie_path'] = $moviePath;
-            $debugData['movie_url'] = $movieUrl;
-        }
+    }
+    
+    if ($debug) {
+        $debugData['movie_path'] = $moviePath;
+        $debugData['movie_url'] = $movieUrl;
+        // Save a snippet of HTML for debugging
+        $debugData['html_snippet'] = substr($html, 0, 2000); // First 2000 chars
+    }
+    
+    if ($movieUrl) {
         
         // Fetch the movie detail page
         $ch = curl_init();
