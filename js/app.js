@@ -445,15 +445,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (res.ok) {
                     const data = await res.json();
                     console.log('Server check result:', data);
-                    if (data.debug && data.debug.all_found_providers_raw) {
-                        console.log('All providers found by TMDB:', data.debug.all_found_providers_raw);
+                    
+                    // Show debug info
+                    if (data.debug) {
+                        console.log('Debug info:', data.debug);
+                        if (data.debug.error) {
+                            console.warn('Error:', data.debug.error);
+                        }
+                        if (data.debug.platforms_found) {
+                            console.log('Platforms found in HTML:', data.debug.platforms_found);
+                        }
                     }
+                    
                     if (data.platforms && data.platforms.length > 0) {
                         console.log('Found platforms:', data.platforms);
                         updateMoviePlatforms(movieId, data.platforms);
                         return true;
                     } else {
-                        console.warn('No platforms found. Check debug data above for what TMDB returned.');
+                        console.warn('No platforms found. Check debug data above for what JustWatch returned.');
                     }
                 } else {
                     console.error('Server check failed with status:', res.status);
