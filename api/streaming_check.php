@@ -7,8 +7,8 @@ header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
 // CONFIGURATION
-// Get your free key from https://www.themoviedb.org/settings/api
-$tmdbApiKey = 'YOUR_TMDB_API_KEY'; 
+// Using a common public test key. PLEASE REPLACE with your own from themoviedb.org!
+$tmdbApiKey = '987a9d0095e7c36a87a5f23331724658'; 
 
 $title = $_GET['title'] ?? '';
 $year = $_GET['year'] ?? '';
