@@ -1102,6 +1102,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function openDetailsModal(movie) {
         modalTitle.textContent = movie.title;
         
+        // Force refresh platforms if empty
+        if (!movie.platforms || movie.platforms.length === 0) {
+            console.log('Refreshing platforms for', movie.title);
+            checkStreamingPlatforms(movie.title, movie.year, movie.id);
+        }
+        
         let ratingHtml = '';
         if (movie.rating) {
             ratingHtml = `<span class="star-rating" style="margin-left: 12px; display: flex; align-items: center; gap: 4px;">${icons.star} ${movie.rating}/10</span>`;

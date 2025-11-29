@@ -441,12 +441,23 @@ input, textarea {
     width: 40%;
     min-height: 500px;
     background: #000;
+    position: relative; /* For absolute positioning of image if needed */
+    display: flex; /* Remove inline gaps */
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    overflow: hidden;
 }
 
 .modal-poster img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center center !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
 }
 
 .modal-info {
