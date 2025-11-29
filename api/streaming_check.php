@@ -54,31 +54,40 @@ if (!empty($data['results'])) {
     
     if ($debug) $debugData['providers_raw'] = $provData['results'] ?? 'No results';
     
-    // Check US (US) for broader availability
-    if (isset($provData['results']['US'])) {
-        $regionData = $provData['results']['US'];
-        
-        // Merge all types (flatrate, rent, buy, ads) to find ANY availability
-        $allProviders = [];
-        if (isset($regionData['flatrate'])) $allProviders = array_merge($allProviders, $regionData['flatrate']);
-        if (isset($regionData['rent'])) $allProviders = array_merge($allProviders, $regionData['rent']);
-        if (isset($regionData['buy'])) $allProviders = array_merge($allProviders, $regionData['buy']);
-        if (isset($regionData['ads'])) $allProviders = array_merge($allProviders, $regionData['ads']); // Free with ads
-        
-        foreach ($allProviders as $provider) {
-            $name = strtolower($provider['provider_name']);
+    // Check multiple regions for broader availability (US, SI, GB, DE)
+    $targetRegions = ['US', 'SI', 'GB', 'DE'];
+    
+    foreach ($targetRegions as $region) {
+        if (isset($provData['results'][$region])) {
+            $regionData = $provData['results'][$region];
             
-            // Map TMDB names to our internal IDs
-            if (strpos($name, 'netflix') !== false) $platforms[] = 'netflix';
-            elseif (strpos($name, 'disney') !== false) $platforms[] = 'disneyplus';
-            elseif (strpos($name, 'sky') !== false) $platforms[] = 'skyshowtime';
-            elseif (strpos($name, 'hbo') !== false || strpos($name, 'max') !== false) $platforms[] = 'hbomax';
-            elseif (strpos($name, 'voyo') !== false) $platforms[] = 'voyo';
-            elseif (strpos($name, 'amazon') !== false) $platforms[] = 'amazonprime';
+            // Merge all types (flatrate, rent, buy, ads) to find ANY availability
+            $allProviders = [];
+            if (isset($regionData['flatrate'])) $allProviders = array_merge($allProviders, $regionData['flatrate']);
+            if (isset($regionData['rent'])) $allProviders = array_merge($allProviders, $regionData['rent']);
+            if (isset($regionData['buy'])) $allProviders = array_merge($allProviders, $regionData['buy']);
+            if (isset($regionData['ads'])) $allProviders = array_merge($allProviders, $regionData['ads']); // Free with ads
+            
+            foreach ($allProviders as $provider) {
+                $name = strtolower($provider['provider_name']);
+                
+                // Map TMDB names to our internal IDs
+                if (strpos($name, 'netflix') !== false) $platforms[] = 'netflix';
+                elseif (strpos($name, 'disney') !== false) $platforms[] = 'disneyplus';
+                elseif (strpos($name, 'sky') !== false) $platforms[] = 'skyshowtime';
+                elseif (strpos($name, 'hbo') !== false || strpos($name, 'max') !== false) $platforms[] = 'hbomax';
+                elseif (strpos($name, 'voyo') !== false) $platforms[] = 'voyo';
+                elseif (strpos($name, 'amazon') !== false) $platforms[] = 'amazonprime';
+            }
         }
-    } else {
+    }
+    
+    // Remove duplicates from multi-region check
+    $platforms = array_values(array_unique($platforms));
+    
+    if (empty($platforms)) {
         if ($debug) {
-            $debugData['error'] = 'No US data found in TMDB response';
+            $debugData['error'] = 'No relevant platforms found in targeted regions';
             $debugData['available_regions'] = isset($provData['results']) ? array_keys($provData['results']) : [];
         }
     }

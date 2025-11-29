@@ -437,10 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function checkStreamingPlatforms(title, year, movieId) {
         console.log(`Starting platform check for ${title} (${year}) ID: ${movieId}`);
         
-        // Run BOTH server and client checks in parallel for maximum reliability
-        // We don't await the server check before starting the client check
-        
-        // 1. Server Check (Promise)
+        // 1. Server Check (Promise) - IMPROVED to check multiple regions
         const serverCheck = (async () => {
             try {
                 const platformUrl = `${STREAMING_CHECK_URL}?title=${encodeURIComponent(title)}${year ? '&year=' + encodeURIComponent(year) : ''}`;
@@ -459,90 +456,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         })();
 
-        // 2. Client Check (Promise)
-        const clientCheck = (async () => {
-            try {
-                const searchQuery = encodeURIComponent(title);
-                // Try primary proxy
-                let proxyUrl = 'https://api.allorigins.win/get?url=';
-                // Use US search for broader result coverage
-                let targetUrl = encodeURIComponent(`https://www.justwatch.com/us/search?q=${searchQuery}`);
-                
-                console.log('Starting client-side check via proxy (allorigins)...');
-                let res = await fetch(proxyUrl + targetUrl);
-                
-                if (!res.ok) {
-                    // Try fallback proxy if first one fails
-                    console.log('Primary proxy failed, trying fallback (corsproxy.io)...');
-                    proxyUrl = 'https://corsproxy.io/?';
-                    targetUrl = `https://www.justwatch.com/us/search?q=${searchQuery}`; // corsproxy takes raw URL
-                    res = await fetch(proxyUrl + targetUrl);
-                }
-
-                if (res.ok) {
-                    let html = '';
-                    // Handle different proxy response formats
-                    if (proxyUrl.includes('allorigins')) {
-                        const data = await res.json();
-                        html = data.contents;
-                    } else {
-                        html = await res.text();
-                    }
-                    
-                    console.log('Proxy response received, length:', html.length);
-                    
-                    if (html && html.length > 100) {
-                        // Updated regex for US path - flexible to catch movie/tv-show paths
-                        // Matches: href="/us/movie/..." or href="/us/tv-show/..." or similar
-                        const linkMatch = html.match(/href="(\/us\/[^"]+)"/i);
-                        if (linkMatch) {
-                            const moviePath = linkMatch[1];
-                            console.log('Client found movie page:', moviePath);
-                            
-                            // Fetch movie page
-                            let movieHtml = '';
-                            if (proxyUrl.includes('allorigins')) {
-                                const movieTargetUrl = encodeURIComponent(`https://www.justwatch.com${moviePath}`);
-                                const movieRes = await fetch(proxyUrl + movieTargetUrl);
-                                const movieData = await movieRes.json();
-                                movieHtml = movieData.contents;
-                            } else {
-                                const movieTargetUrl = `https://www.justwatch.com${moviePath}`;
-                                const movieRes = await fetch(proxyUrl + movieTargetUrl);
-                                movieHtml = await movieRes.text();
-                            }
-                            
-                            const platforms = [];
-                            const has = (str) => movieHtml.toLowerCase().includes(str.toLowerCase());
-                            
-                            // Broader checks for platforms
-                            if (has('alt="Netflix"') || has('title="Netflix"') || has('content="Netflix"')) platforms.push('netflix');
-                            if (has('alt="Disney Plus"') || has('title="Disney Plus"') || has('alt="Disney+"') || has('title="Disney+"')) platforms.push('disneyplus');
-                            if (has('alt="SkyShowtime"') || has('title="SkyShowtime"')) platforms.push('skyshowtime');
-                            if (has('alt="HBO Max"') || has('title="HBO Max"') || has('alt="Max"') || has('title="Max"')) platforms.push('hbomax');
-                            if (has('alt="Voyo"') || has('title="Voyo"')) platforms.push('voyo');
-                            
-                            console.log('Client found platforms:', platforms);
-                            if (platforms.length > 0) {
-                                updateMoviePlatforms(movieId, platforms.map(p => ({ name: p, url: null })));
-                                return true;
-                            }
-                        } else {
-                            console.log('Client check: Movie link regex failed on HTML');
-                        }
-                    }
-                } else {
-                    console.log('Client proxy request failed:', res.status);
-                }
-            } catch (e) {
-                console.error('Client-side platform check failed:', e);
-            }
-            return false;
-        })();
+        // Client check removed due to CORS/Proxy issues. Relying on improved server-side check.
         
-        // We don't really need to wait for them here as they update the UI independently
-        // But tracking them helps debug
-        Promise.allSettled([serverCheck, clientCheck]).then(() => {
+        Promise.allSettled([serverCheck]).then(() => {
             console.log('All platform checks finished');
         });
     }
