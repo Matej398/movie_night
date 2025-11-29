@@ -126,38 +126,32 @@ if ($html === false) {
                 $debugData['error'] = 'Failed to fetch movie page: ' . ($movieCurlError ?: 'Unknown error');
             }
         } elseif ($movieHttpCode === 200 && $movieHtml && strlen($movieHtml) > 100) {
-            // Convert to lowercase for case-insensitive matching
-            $htmlLower = strtolower($movieHtml);
+            // Look for platform provider logos/images - only match img tags with platform names in alt/title
+            // This is more specific than searching the entire HTML
             
-            // Check for platforms in HTML (multiple patterns to catch different formats)
-            if (stripos($htmlLower, 'netflix') !== false || 
-                preg_match('/alt=["\']netflix["\']/i', $movieHtml) ||
-                preg_match('/title=["\']netflix["\']/i', $movieHtml)) {
+            // Netflix - must be in img alt/title attribute
+            if (preg_match('/<img[^>]*(?:alt|title)=["\'][^"\']*netflix[^"\']*["\'][^>]*>/i', $movieHtml)) {
                 $platforms[] = 'netflix';
             }
             
-            if (stripos($htmlLower, 'disney') !== false || 
-                stripos($htmlLower, 'disney+') !== false ||
-                preg_match('/alt=["\']disney\s*plus["\']/i', $movieHtml) ||
-                preg_match('/title=["\']disney\s*plus["\']/i', $movieHtml)) {
+            // Disney+ - must be in img alt/title attribute
+            if (preg_match('/<img[^>]*(?:alt|title)=["\'][^"\']*(?:disney\s*plus|disney\+)[^"\']*["\'][^>]*>/i', $movieHtml)) {
                 $platforms[] = 'disneyplus';
             }
             
-            if (stripos($htmlLower, 'skyshowtime') !== false || 
-                stripos($htmlLower, 'sky showtime') !== false ||
-                preg_match('/alt=["\']skyshowtime["\']/i', $movieHtml)) {
+            // SkyShowtime - must be in img alt/title attribute
+            if (preg_match('/<img[^>]*(?:alt|title)=["\'][^"\']*skyshowtime[^"\']*["\'][^>]*>/i', $movieHtml)) {
                 $platforms[] = 'skyshowtime';
             }
             
-            if (stripos($htmlLower, 'hbo max') !== false || 
-                stripos($htmlLower, 'max') !== false ||
-                preg_match('/alt=["\']hbo\s*max["\']/i', $movieHtml) ||
-                preg_match('/alt=["\']max["\']/i', $movieHtml)) {
+            // HBO Max - must be in img alt/title attribute (check for both "hbo max" and just "max" as alt)
+            if (preg_match('/<img[^>]*(?:alt|title)=["\'][^"\']*hbo\s*max[^"\']*["\'][^>]*>/i', $movieHtml) ||
+                preg_match('/<img[^>]*(?:alt|title)=["\']max["\'][^>]*>/i', $movieHtml)) {
                 $platforms[] = 'hbomax';
             }
             
-            if (stripos($htmlLower, 'voyo') !== false ||
-                preg_match('/alt=["\']voyo["\']/i', $movieHtml)) {
+            // Voyo - must be in img alt/title attribute
+            if (preg_match('/<img[^>]*(?:alt|title)=["\'][^"\']*voyo[^"\']*["\'][^>]*>/i', $movieHtml)) {
                 $platforms[] = 'voyo';
             }
             
