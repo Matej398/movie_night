@@ -440,9 +440,9 @@ input, textarea {
 .modal-poster {
     width: 40%;
     min-height: 500px;
-    background: #000;
-    position: relative; /* For absolute positioning of image if needed */
-    display: flex; /* Remove inline gaps */
+    background: transparent !important; /* Remove black/white background */
+    position: relative;
+    display: flex;
     padding: 0 !important;
     margin: 0 !important;
     border: none !important;
@@ -452,12 +452,20 @@ input, textarea {
 .modal-poster img {
     width: 100% !important;
     height: 100% !important;
-    object-fit: cover !important;
+    object-fit: cover !important; /* Force cover to fill gaps */
     object-position: center center !important;
     display: block !important;
     margin: 0 !important;
     padding: 0 !important;
     border: none !important;
+    background: transparent !important;
+    border-radius: 24px 0 0 24px; /* Match modal radius on left side */
+}
+
+@media (max-width: 850px) {
+    .modal-poster img {
+        border-radius: 24px 24px 0 0; /* Top radius for mobile */
+    }
 }
 
 .modal-info {
