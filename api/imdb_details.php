@@ -92,10 +92,18 @@ if (!$jsonLd) {
 $title = $jsonLd['name'] ?? '';
 $image = $jsonLd['image'] ?? '';
 if ($image) {
-    // Force US CDN and English locale by replacing domain and cleaning URL params
+    // Force US CDN and English locale by replacing domain
     $image = preg_replace('/https?:\/\/[^\/]+\.media-amazon\.com/', 'https://m.media-amazon.com', $image);
-    // Remove any locale-specific parameters and use clean English version
-    $image = preg_replace('/_V1_.*?\.jpg$/i', '_V1_.jpg', $image);
+    // Extract base path and rebuild with English locale parameters
+    // Pattern: /images/M/[path]/_V1_[params].jpg
+    if (preg_match('/^(.+\/images\/M\/[^_]+)/i', parse_url($image, PHP_URL_PATH), $matches)) {
+        $basePath = $matches[1];
+        // Use English locale (AL_) with good quality (QL75) and standard size (UX600)
+        $image = 'https://m.media-amazon.com' . $basePath . '/_V1_QL75_UX600_CR0,0,600,900_AL_.jpg';
+    } else {
+        // Fallback: remove locale params and add English locale
+        $image = preg_replace('/_V1_.*?\.jpg$/i', '_V1_QL75_AL_.jpg', $image);
+    }
 }
 $description = $jsonLd['description'] ?? '';
 $genre = '';

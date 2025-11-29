@@ -175,36 +175,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Helper to get optimized image URL and force English locale
     function getOptimizedImageUrl(url, width = 600) {
-        if (!url || !url.includes('media-amazon.com')) return url;
+        if (!url) return url;
+        
+        // If it's not an Amazon/IMDb image, return as-is
+        if (!url.includes('media-amazon.com')) return url;
         
         try {
             // Extract the base path (everything before _V1_)
             // IMDb URLs typically: https://[domain].media-amazon.com/images/M/[path]/_V1_[params].jpg
             const urlObj = new URL(url);
-            let pathParts = urlObj.pathname.split('/');
+            let pathname = urlObj.pathname;
             
-            // Find the part with _V1_ or the image filename
-            let basePath = '';
-            let foundV1 = false;
+            // Remove query parameters first
+            let basePath = pathname;
             
-            for (let i = 0; i < pathParts.length; i++) {
-                if (pathParts[i].includes('_V1_') || pathParts[i].match(/\.jpg$/i)) {
-                    // Extract everything before _V1_ or the filename
-                    basePath = pathParts.slice(0, i).join('/');
-                    foundV1 = true;
-                    break;
-                }
-            }
-            
-            if (!foundV1) {
-                // Fallback: try to extract base path manually
-                const match = url.match(/^(https?:\/\/[^\/]+\.media-amazon\.com\/images\/M\/[^_]+)/i);
-                if (match) {
-                    basePath = match[1].replace(/^https?:\/\/[^\/]+\.media-amazon\.com/i, '');
+            // Extract base path before _V1_ or any version parameters
+            // Pattern: /images/M/[path]/_V1_[params].jpg
+            const baseMatch = pathname.match(/^(\/images\/M\/[^_]+)/i);
+            if (baseMatch) {
+                basePath = baseMatch[1];
+            } else {
+                // Fallback: try to find the path before the filename
+                const pathMatch = pathname.match(/^(.+)\/[^\/]+\.jpg$/i);
+                if (pathMatch) {
+                    basePath = pathMatch[1];
                 } else {
-                    // Last resort: use original URL but force US CDN
-                    return url.replace(/https?:\/\/[^\/]+\.media-amazon\.com/i, 'https://m.media-amazon.com') + 
-                           (url.includes('?') ? '&' : '?') + '_nc_cat=0&_nc_ohc=0&_nc_ht=m.media-amazon.com';
+                    // Last resort: use pathname as-is
+                    basePath = pathname.replace(/\/[^\/]*\.jpg$/i, '');
                 }
             }
             
@@ -212,14 +209,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const height = Math.round(width * 1.5);
             
             // Force US CDN and rebuild URL with English locale parameters
-            // AL_ = English locale, QL75 = quality, UX = width, CR = crop
+            // AL_ = English locale (American), QL75 = quality 75%, UX = width, CR = crop
+            // Using AL_ ensures we get English/American posters, not German ones
             const englishUrl = `https://m.media-amazon.com${basePath}/_V1_QL75_UX${width}_CR0,0,${width},${height}_AL_.jpg`;
             
             return englishUrl;
         } catch (e) {
-            // If URL parsing fails, try simple replacement
+            // If URL parsing fails, try simple replacement to US CDN
             console.warn('Image URL transformation failed:', e);
-            return url.replace(/https?:\/\/[^\/]+\.media-amazon\.com/i, 'https://m.media-amazon.com');
+            // Force US CDN and add English locale parameter
+            return url.replace(/https?:\/\/[^\/]+\.media-amazon\.com/i, 'https://m.media-amazon.com')
+                     .replace(/_V1_.*?\.jpg$/i, '_V1_QL75_AL_.jpg');
         }
     }
 
@@ -932,29 +932,43 @@ document.addEventListener('DOMContentLoaded', () => {
             img.loading = 'lazy'; // Native lazy loading
             img.decoding = 'async';
             
-            // Check if it's an IMDb/Amazon image - proactively get English version from TMDB
-            // This ensures we always get English posters, not German ones
+            // Always try to get English poster from TMDB first for better quality and guaranteed English
+            // This ensures we always get English/American posters, not German ones
             const isImdbImage = movie.image_url.includes('media-amazon.com');
             
             if (isImdbImage) {
-                // Try to get English poster from TMDB first
+                // Try to get English poster from TMDB first (always returns English posters)
+                fetch(`api/get_english_poster.php?title=${encodeURIComponent(movie.title)}${movie.year ? '&year=' + encodeURIComponent(movie.year) : ''}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success && data.image_url) {
+                            // TMDB always returns English posters
+                            img.src = data.image_url;
+                        } else {
+                            // Fallback to transformed IMDb URL with forced English locale
+                            img.src = getOptimizedImageUrl(movie.image_url, 400);
+                        }
+                    })
+                    .catch(() => {
+                        // Fallback to transformed IMDb URL with forced English locale if TMDB fails
+                        img.src = getOptimizedImageUrl(movie.image_url, 400);
+                    });
+            } else {
+                // Not an IMDb image, but still try TMDB for consistency
                 fetch(`api/get_english_poster.php?title=${encodeURIComponent(movie.title)}${movie.year ? '&year=' + encodeURIComponent(movie.year) : ''}`)
                     .then(res => res.json())
                     .then(data => {
                         if (data.success && data.image_url) {
                             img.src = data.image_url;
                         } else {
-                            // Fallback to transformed IMDb URL
-                            img.src = getOptimizedImageUrl(movie.image_url, 400);
+                            // Use original URL if TMDB fails
+                            img.src = movie.image_url;
                         }
                     })
                     .catch(() => {
-                        // Fallback to transformed IMDb URL if TMDB fails
-                        img.src = getOptimizedImageUrl(movie.image_url, 400);
+                        // Use original URL if TMDB fails
+                        img.src = movie.image_url;
                     });
-            } else {
-                // Not an IMDb image, use as-is
-                img.src = getOptimizedImageUrl(movie.image_url, 400);
             }
             
             img.onerror = function() {
@@ -1222,9 +1236,40 @@ document.addEventListener('DOMContentLoaded', () => {
         modalDesc.textContent = movie.description || 'No description available.';
         
         if (movie.image_url) {
-            // Use higher quality for modal (width 800)
-            modalImg.src = getOptimizedImageUrl(movie.image_url, 800);
-            modalImg.style.display = 'block';
+            // Try TMDB first for English poster, then fallback to optimized IMDb URL
+            const isImdbImage = movie.image_url.includes('media-amazon.com');
+            if (isImdbImage) {
+                fetch(`api/get_english_poster.php?title=${encodeURIComponent(movie.title)}${movie.year ? '&year=' + encodeURIComponent(movie.year) : ''}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success && data.image_url) {
+                            modalImg.src = data.image_url;
+                        } else {
+                            modalImg.src = getOptimizedImageUrl(movie.image_url, 800);
+                        }
+                        modalImg.style.display = 'block';
+                    })
+                    .catch(() => {
+                        modalImg.src = getOptimizedImageUrl(movie.image_url, 800);
+                        modalImg.style.display = 'block';
+                    });
+            } else {
+                // Try TMDB for non-IMDb images too
+                fetch(`api/get_english_poster.php?title=${encodeURIComponent(movie.title)}${movie.year ? '&year=' + encodeURIComponent(movie.year) : ''}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success && data.image_url) {
+                            modalImg.src = data.image_url;
+                        } else {
+                            modalImg.src = movie.image_url;
+                        }
+                        modalImg.style.display = 'block';
+                    })
+                    .catch(() => {
+                        modalImg.src = movie.image_url;
+                        modalImg.style.display = 'block';
+                    });
+            }
         } else {
             modalImg.style.display = 'none';
         }

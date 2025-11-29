@@ -49,8 +49,17 @@ if (isset($data['d'])) {
             $imageUrl = $item['i']['imageUrl'] ?? '';
             // Force US CDN and English locale
             if ($imageUrl) {
+                // Force US CDN
                 $imageUrl = preg_replace('/https?:\/\/[^\/]+\.media-amazon\.com/', 'https://m.media-amazon.com', $imageUrl);
-                $imageUrl = preg_replace('/_V1_.*?\.jpg$/i', '_V1_.jpg', $imageUrl);
+                // Extract base path and rebuild with English locale parameters
+                if (preg_match('/^(.+\/images\/M\/[^_]+)/i', parse_url($imageUrl, PHP_URL_PATH), $matches)) {
+                    $basePath = $matches[1];
+                    // Use English locale (AL_) with good quality (QL75) and standard size (UX400)
+                    $imageUrl = 'https://m.media-amazon.com' . $basePath . '/_V1_QL75_UX400_CR0,0,400,600_AL_.jpg';
+                } else {
+                    // Fallback: add English locale parameter
+                    $imageUrl = preg_replace('/_V1_.*?\.jpg$/i', '_V1_QL75_AL_.jpg', $imageUrl);
+                }
             }
             $results[] = [
                 'id' => $item['id'],
