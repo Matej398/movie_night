@@ -443,7 +443,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const platformUrl = `${STREAMING_CHECK_URL}?title=${encodeURIComponent(title)}${year ? '&year=' + encodeURIComponent(year) : ''}&debug=1`;
                 const res = await fetch(platformUrl);
                 if (res.ok) {
-                    const data = await res.json();
+                    const text = await res.text();
+                    let data;
+                    try {
+                        data = JSON.parse(text);
+                    } catch (parseError) {
+                        console.error('Failed to parse JSON response:', parseError);
+                        console.error('Response text:', text.substring(0, 500));
+                        return false;
+                    }
+                    
                     console.log('Server check result:', data);
                     
                     // Show debug info
@@ -465,7 +474,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.warn('No platforms found. Check debug data above for what JustWatch returned.');
                     }
                 } else {
+                    const errorText = await res.text();
                     console.error('Server check failed with status:', res.status);
+                    console.error('Response:', errorText.substring(0, 500));
                 }
             } catch (e) {
                 console.error('Server platform check failed:', e);

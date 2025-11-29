@@ -28,26 +28,36 @@ curl_setopt($ch, CURLOPT_URL, $searchUrl);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
     'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
     'Accept-Language: en-US,en;q=0.9',
-    'Accept-Encoding: gzip, deflate, br',
     'Connection: keep-alive',
     'Upgrade-Insecure-Requests: 1'
 ]);
 
 $html = curl_exec($ch);
+$curlError = curl_error($ch);
 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 curl_close($ch);
 
 if ($debug) {
     $debugData['search_url'] = $searchUrl;
     $debugData['http_code'] = $httpCode;
-    $debugData['html_length'] = strlen($html);
+    $debugData['html_length'] = $html ? strlen($html) : 0;
+    if ($curlError) {
+        $debugData['curl_error'] = $curlError;
+    }
 }
 
-if ($httpCode === 200 && $html && strlen($html) > 100) {
+if ($html === false) {
+    // Curl failed
+    if ($debug) {
+        $debugData['error'] = 'Curl request failed: ' . ($curlError ?: 'Unknown error');
+    }
+} elseif ($httpCode === 200 && $html && strlen($html) > 100) {
     // Find movie/TV show link in search results - try multiple patterns
     $moviePath = null;
     $movieUrl = null;
@@ -88,25 +98,34 @@ if ($httpCode === 200 && $html && strlen($html) > 100) {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             'Accept-Language: en-US,en;q=0.9',
-            'Accept-Encoding: gzip, deflate, br',
             'Connection: keep-alive',
             'Upgrade-Insecure-Requests: 1'
         ]);
         
         $movieHtml = curl_exec($ch);
+        $movieCurlError = curl_error($ch);
         $movieHttpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
         
         if ($debug) {
             $debugData['movie_http_code'] = $movieHttpCode;
-            $debugData['movie_html_length'] = strlen($movieHtml);
+            $debugData['movie_html_length'] = $movieHtml ? strlen($movieHtml) : 0;
+            if ($movieCurlError) {
+                $debugData['movie_curl_error'] = $movieCurlError;
+            }
         }
         
-        if ($movieHttpCode === 200 && $movieHtml && strlen($movieHtml) > 100) {
+        if ($movieHtml === false) {
+            if ($debug) {
+                $debugData['error'] = 'Failed to fetch movie page: ' . ($movieCurlError ?: 'Unknown error');
+            }
+        } elseif ($movieHttpCode === 200 && $movieHtml && strlen($movieHtml) > 100) {
             // Convert to lowercase for case-insensitive matching
             $htmlLower = strtolower($movieHtml);
             
@@ -174,5 +193,17 @@ if ($debug) {
     $output['debug'] = $debugData;
 }
 
-echo json_encode($output);
+// Ensure we always output valid JSON
+$json = json_encode($output);
+if ($json === false) {
+    // Fallback if json_encode fails
+    echo json_encode([
+        'platforms' => [],
+        'title' => $title,
+        'justwatch_used' => true,
+        'error' => 'JSON encoding failed'
+    ]);
+} else {
+    echo $json;
+}
 ?>
