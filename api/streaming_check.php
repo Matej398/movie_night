@@ -54,41 +54,49 @@ if (!empty($data['results'])) {
     
     if ($debug) $debugData['providers_raw'] = $provData['results'] ?? 'No results';
     
-    // Check multiple regions for broader availability (US, SI, GB, DE)
-    $targetRegions = ['US', 'SI', 'GB', 'DE'];
+    // Check ALL regions for broader availability
+    $availableRegions = isset($provData['results']) ? array_keys($provData['results']) : [];
+    $allFoundProviders = [];
     
-    foreach ($targetRegions as $region) {
-        if (isset($provData['results'][$region])) {
-            $regionData = $provData['results'][$region];
+    foreach ($availableRegions as $region) {
+        if (!isset($provData['results'][$region])) continue;
+        
+        $regionData = $provData['results'][$region];
+        
+        // Merge all types (flatrate, rent, buy, ads) to find ANY availability
+        $allProviders = [];
+        if (isset($regionData['flatrate'])) $allProviders = array_merge($allProviders, $regionData['flatrate']);
+        if (isset($regionData['rent'])) $allProviders = array_merge($allProviders, $regionData['rent']);
+        if (isset($regionData['buy'])) $allProviders = array_merge($allProviders, $regionData['buy']);
+        if (isset($regionData['ads'])) $allProviders = array_merge($allProviders, $regionData['ads']); // Free with ads
+        
+        foreach ($allProviders as $provider) {
+            $rawName = $provider['provider_name'];
+            $name = strtolower(str_replace([' ', '+', '-'], '', $rawName)); // Normalize: "Disney Plus" -> "disneyplus"
             
-            // Merge all types (flatrate, rent, buy, ads) to find ANY availability
-            $allProviders = [];
-            if (isset($regionData['flatrate'])) $allProviders = array_merge($allProviders, $regionData['flatrate']);
-            if (isset($regionData['rent'])) $allProviders = array_merge($allProviders, $regionData['rent']);
-            if (isset($regionData['buy'])) $allProviders = array_merge($allProviders, $regionData['buy']);
-            if (isset($regionData['ads'])) $allProviders = array_merge($allProviders, $regionData['ads']); // Free with ads
+            $allFoundProviders[] = $rawName;
             
-            foreach ($allProviders as $provider) {
-                $name = strtolower($provider['provider_name']);
-                
-                // Map TMDB names to our internal IDs
-                if (strpos($name, 'netflix') !== false) $platforms[] = 'netflix';
-                elseif (strpos($name, 'disney') !== false) $platforms[] = 'disneyplus';
-                elseif (strpos($name, 'sky') !== false) $platforms[] = 'skyshowtime';
-                elseif (strpos($name, 'hbo') !== false || strpos($name, 'max') !== false) $platforms[] = 'hbomax';
-                elseif (strpos($name, 'voyo') !== false) $platforms[] = 'voyo';
-                elseif (strpos($name, 'amazon') !== false) $platforms[] = 'amazonprime';
-            }
+            // Map TMDB names to our internal IDs with loose matching
+            if (strpos($name, 'netflix') !== false) $platforms[] = 'netflix';
+            elseif (strpos($name, 'disney') !== false) $platforms[] = 'disneyplus';
+            elseif (strpos($name, 'sky') !== false || strpos($name, 'showtime') !== false) $platforms[] = 'skyshowtime';
+            elseif (strpos($name, 'hbo') !== false || strpos($name, 'max') !== false) $platforms[] = 'hbomax';
+            elseif (strpos($name, 'voyo') !== false) $platforms[] = 'voyo';
+            elseif (strpos($name, 'amazon') !== false || strpos($name, 'prime') !== false) $platforms[] = 'amazonprime';
         }
     }
     
-    // Remove duplicates from multi-region check
+    // Remove duplicates
     $platforms = array_values(array_unique($platforms));
+    
+    if ($debug) {
+        $debugData['all_found_providers_raw'] = array_values(array_unique($allFoundProviders));
+    }
     
     if (empty($platforms)) {
         if ($debug) {
-            $debugData['error'] = 'No relevant platforms found in targeted regions';
-            $debugData['available_regions'] = isset($provData['results']) ? array_keys($provData['results']) : [];
+            $debugData['error'] = 'No relevant platforms found in any region';
+            $debugData['available_regions'] = $availableRegions;
         }
     }
 }
