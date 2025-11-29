@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
         check: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
         undo: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>`,
         play: `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`,
-        star: `<svg width="14" height="14" viewBox="0 0 24 24" fill="#f5c518" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`
+        star: `<svg width="14" height="14" viewBox="0 0 24 24" fill="#ffffff" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`
     };
 
     // Helper to get optimized image URL and force English locale
@@ -1013,7 +1013,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const searchUrls = {
             'netflix': 'https://www.netflix.com/search?q=',
             'disneyplus': 'https://www.disneyplus.com/en-gb/browse/search?q=',
-            'skyshowtime': 'https://www.skyshowtime.com/search?q=',
+            'skyshowtime': 'https://www.skyshowtime.com/watch/search?q=',
             'hbomax': 'https://play.hbomax.com/search?q=',
             'voyo': 'https://voyo.nova.cz/hledani?q=' // Assuming CZ, adjust if needed
         };
@@ -1064,6 +1064,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (platforms.length > 0) {
                 const badgesContainer = document.createElement('div');
                 badgesContainer.className = 'modal-platform-badges';
+                badgesContainer.style.display = 'inline-flex';
+                badgesContainer.style.alignItems = 'center';
+                badgesContainer.style.gap = '8px';
                 
                 platforms.forEach(platformData => {
                     let platformName = '';
@@ -1173,15 +1176,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     badgesContainer.appendChild(badge);
                 });
                 
-                platformsContainer.innerHTML = '';
-                platformsContainer.appendChild(badgesContainer);
-                
-                // Always add 1337x.to link after badges
+                // Always add 1337x.to link after badges (inline)
                 const separator = document.createElement('span');
                 separator.textContent = ' | ';
                 separator.style.margin = '0 8px';
                 separator.style.color = 'var(--text-secondary, #999)';
-                platformsContainer.appendChild(separator);
+                badgesContainer.appendChild(separator);
                 
                 const unavailableLink = document.createElement('a');
                 const searchQuery = encodeURIComponent(movie.title);
@@ -1193,7 +1193,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 unavailableLink.style.textDecoration = 'underline';
                 unavailableLink.style.cursor = 'pointer';
                 unavailableLink.title = `Search "${movie.title}" on 1337x.to`;
-                platformsContainer.appendChild(unavailableLink);
+                badgesContainer.appendChild(unavailableLink);
+                
+                platformsContainer.innerHTML = '';
+                platformsContainer.appendChild(badgesContainer);
                 platformsContainer.style.display = 'block';
             } else {
                 // Create search link for 1337x.to with movie title (when no badges)
