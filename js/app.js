@@ -932,19 +932,31 @@ document.addEventListener('DOMContentLoaded', () => {
             img.loading = 'lazy'; // Native lazy loading
             img.decoding = 'async';
             // Use optimized URL for cards (width 400 is enough for 220px wide cards)
-            img.src = getOptimizedImageUrl(movie.image_url, 400);
+            let imageUrl = getOptimizedImageUrl(movie.image_url, 400);
+            img.src = imageUrl;
             
-            img.onload = function() {
-                this.classList.add('image-loaded');
-                // Remove shimmer effect from parent
-                if (this.parentElement) {
-                    this.parentElement.classList.add('loaded');
-                }
-            };
-
-            img.onerror = function() {
+            // Check if image might be German and try to get English version from TMDB
+            // This is a fallback if URL transformation doesn't work
+            img.onerror = async function() {
                 if (!this.classList.contains('image-error-handled')) {
                     this.classList.add('image-error-handled');
+                    // Try to get English poster from TMDB
+                    try {
+                        const tmdbUrl = `api/get_english_poster.php?title=${encodeURIComponent(movie.title)}${movie.year ? '&year=' + encodeURIComponent(movie.year) : ''}`;
+                        const response = await fetch(tmdbUrl);
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.success && data.image_url) {
+                                this.src = data.image_url;
+                                this.classList.remove('image-error-handled');
+                                return;
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Failed to fetch English poster from TMDB:', e);
+                    }
+                    
+                    // If TMDB fails, show placeholder
                     if (this.parentElement) {
                         this.parentElement.classList.add('loaded'); // Stop shimmer
                         const placeholder = document.createElement('div');
@@ -952,6 +964,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         placeholder.textContent = movie.title;
                         this.parentElement.replaceChild(placeholder, this);
                     }
+                }
+            };
+            
+            img.onload = function() {
+                this.classList.add('image-loaded');
+                // Remove shimmer effect from parent
+                if (this.parentElement) {
+                    this.parentElement.classList.add('loaded');
                 }
             };
             
