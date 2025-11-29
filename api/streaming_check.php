@@ -54,16 +54,16 @@ if (!empty($data['results'])) {
     
     if ($debug) $debugData['providers_raw'] = $provData['results'] ?? 'No results';
     
-    // Check Slovenia (SI)
-    if (isset($provData['results']['SI'])) {
-        $siData = $provData['results']['SI'];
+    // Check US (US) for broader availability
+    if (isset($provData['results']['US'])) {
+        $regionData = $provData['results']['US'];
         
         // Merge all types (flatrate, rent, buy, ads) to find ANY availability
         $allProviders = [];
-        if (isset($siData['flatrate'])) $allProviders = array_merge($allProviders, $siData['flatrate']);
-        if (isset($siData['rent'])) $allProviders = array_merge($allProviders, $siData['rent']);
-        if (isset($siData['buy'])) $allProviders = array_merge($allProviders, $siData['buy']);
-        if (isset($siData['ads'])) $allProviders = array_merge($allProviders, $siData['ads']); // Free with ads
+        if (isset($regionData['flatrate'])) $allProviders = array_merge($allProviders, $regionData['flatrate']);
+        if (isset($regionData['rent'])) $allProviders = array_merge($allProviders, $regionData['rent']);
+        if (isset($regionData['buy'])) $allProviders = array_merge($allProviders, $regionData['buy']);
+        if (isset($regionData['ads'])) $allProviders = array_merge($allProviders, $regionData['ads']); // Free with ads
         
         foreach ($allProviders as $provider) {
             $name = strtolower($provider['provider_name']);
@@ -78,7 +78,7 @@ if (!empty($data['results'])) {
         }
     } else {
         if ($debug) {
-            $debugData['error'] = 'No SI data found in TMDB response';
+            $debugData['error'] = 'No US data found in TMDB response';
             $debugData['available_regions'] = isset($provData['results']) ? array_keys($provData['results']) : [];
         }
     }

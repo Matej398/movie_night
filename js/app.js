@@ -492,8 +492,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log('Proxy response received, length:', html.length);
                     
                     if (html && html.length > 100) {
-                        // Updated regex for US path
-                        const linkMatch = html.match(/href="(\/us\/movie\/[^"]+)"/i) || html.match(/href="(\/us\/tv-show\/[^"]+)"/i);
+                        // Updated regex for US path - flexible to catch movie/tv-show paths
+                        // Matches: href="/us/movie/..." or href="/us/tv-show/..." or similar
+                        const linkMatch = html.match(/href="(\/us\/[^"]+)"/i);
                         if (linkMatch) {
                             const moviePath = linkMatch[1];
                             console.log('Client found movie page:', moviePath);
