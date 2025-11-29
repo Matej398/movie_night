@@ -92,7 +92,10 @@ if (!$jsonLd) {
 $title = $jsonLd['name'] ?? '';
 $image = $jsonLd['image'] ?? '';
 if ($image) {
-    $image = preg_replace('/_V1_.*?.jpg$/', '_V1_.jpg', $image);
+    // Force US CDN and English locale by replacing domain and cleaning URL params
+    $image = preg_replace('/https?:\/\/[^\/]+\.media-amazon\.com/', 'https://m.media-amazon.com', $image);
+    // Remove any locale-specific parameters and use clean English version
+    $image = preg_replace('/_V1_.*?\.jpg$/i', '_V1_.jpg', $image);
 }
 $description = $jsonLd['description'] ?? '';
 $genre = '';

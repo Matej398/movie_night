@@ -173,19 +173,24 @@ document.addEventListener('DOMContentLoaded', () => {
         star: `<svg width="14" height="14" viewBox="0 0 24 24" fill="#f5c518" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`
     };
 
-    // Helper to get optimized image URL
+    // Helper to get optimized image URL and force English locale
     function getOptimizedImageUrl(url, width = 600) {
         if (!url || !url.includes('media-amazon.com')) return url;
-        // Check if it's an IMDb/Amazon image
-        if (url.includes('_V1_')) {
-            // Replace the existing transformation part or the end of the file
-            // Pattern: _V1_....jpg
-            // We want: _V1_QL75_UX{width}_.jpg
-            // If it ends with _V1_.jpg, replace it
-            // If it has other params like _V1_FMjpg..., replace until the end
-            return url.replace(/_V1_.*?.jpg$/, `_V1_QL75_UX${width}_.jpg`);
+        
+        // Force US CDN (English locale)
+        let cleanUrl = url.replace(/https?:\/\/[^\/]+\.media-amazon\.com/i, 'https://m.media-amazon.com');
+        
+        // Check if it's an IMDb/Amazon image with _V1_ pattern
+        if (cleanUrl.includes('_V1_')) {
+            // Calculate approximate height based on aspect ratio (posters are ~2:3)
+            const height = Math.round(width * 1.5);
+            // Replace existing _V1_ parameters with English-optimized version
+            // Pattern: _V1_....jpg -> _V1_QL75_UX{width}_CR0,0,{width},{height}_AL_.jpg
+            // QL75 = quality 75%, UX{width} = width, CR = crop, AL = English locale
+            cleanUrl = cleanUrl.replace(/_V1_.*?\.jpg$/i, `_V1_QL75_UX${width}_CR0,0,${width},${height}_AL_.jpg`);
         }
-        return url;
+        
+        return cleanUrl;
     }
 
     // --- Add Movie Modal ---

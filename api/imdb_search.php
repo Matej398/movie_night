@@ -46,11 +46,17 @@ $results = [];
 if (isset($data['d'])) {
     foreach ($data['d'] as $item) {
         if (isset($item['id']) && isset($item['l'])) {
+            $imageUrl = $item['i']['imageUrl'] ?? '';
+            // Force US CDN and English locale
+            if ($imageUrl) {
+                $imageUrl = preg_replace('/https?:\/\/[^\/]+\.media-amazon\.com/', 'https://m.media-amazon.com', $imageUrl);
+                $imageUrl = preg_replace('/_V1_.*?\.jpg$/i', '_V1_.jpg', $imageUrl);
+            }
             $results[] = [
                 'id' => $item['id'],
                 'title' => $item['l'],
                 'year' => $item['y'] ?? '',
-                'image' => $item['i']['imageUrl'] ?? '',
+                'image' => $imageUrl,
                 'stars' => $item['s'] ?? ''
             ];
         }
