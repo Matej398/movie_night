@@ -465,7 +465,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const searchQuery = encodeURIComponent(title);
                 // Try primary proxy
                 let proxyUrl = 'https://api.allorigins.win/get?url=';
-                let targetUrl = encodeURIComponent(`https://www.justwatch.com/si/pretrazi?q=${searchQuery}`);
+                // Use US search for broader result coverage
+                let targetUrl = encodeURIComponent(`https://www.justwatch.com/us/search?q=${searchQuery}`);
                 
                 console.log('Starting client-side check via proxy (allorigins)...');
                 let res = await fetch(proxyUrl + targetUrl);
@@ -474,7 +475,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Try fallback proxy if first one fails
                     console.log('Primary proxy failed, trying fallback (corsproxy.io)...');
                     proxyUrl = 'https://corsproxy.io/?';
-                    targetUrl = `https://www.justwatch.com/si/pretrazi?q=${searchQuery}`; // corsproxy takes raw URL
+                    targetUrl = `https://www.justwatch.com/us/search?q=${searchQuery}`; // corsproxy takes raw URL
                     res = await fetch(proxyUrl + targetUrl);
                 }
 
@@ -491,7 +492,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log('Proxy response received, length:', html.length);
                     
                     if (html && html.length > 100) {
-                        const linkMatch = html.match(/href="(\/si\/film\/[^"]+)"/i);
+                        // Updated regex for US path
+                        const linkMatch = html.match(/href="(\/us\/movie\/[^"]+)"/i) || html.match(/href="(\/us\/tv-show\/[^"]+)"/i);
                         if (linkMatch) {
                             const moviePath = linkMatch[1];
                             console.log('Client found movie page:', moviePath);
@@ -512,12 +514,16 @@ document.addEventListener('DOMContentLoaded', () => {
                             const platforms = [];
                             const has = (str) => movieHtml.toLowerCase().includes(str.toLowerCase());
                             
-                            if (has('alt="Netflix"') || has('title="Netflix"')) platforms.push('netflix');
-                            if (has('alt="Disney Plus"') || has('title="Disney Plus"') || has('alt="Disney+"')) platforms.push('disneyplus');
+                            // Broader checks for platforms
+                            if (has('alt="Netflix"') || has('title="Netflix"') || has('content="Netflix"')) platforms.push('netflix');
+                            if (has('alt="Disney Plus"') || has('title="Disney Plus"') || has('alt="Disney+"') || has('title="Disney+"')) platforms.push('disneyplus');
                             if (has('alt="SkyShowtime"') || has('title="SkyShowtime"')) platforms.push('skyshowtime');
-                            if (has('alt="HBO Max"') || has('title="HBO Max"') || has('alt="Max"')) platforms.push('hbomax');
+                            if (has('alt="HBO Max"') || has('title="HBO Max"') || has('alt="Max"') || has('title="Max"')) platforms.push('hbomax');
                             if (has('alt="Voyo"') || has('title="Voyo"')) platforms.push('voyo');
-                            if (has('alt="Amazon Prime Video"')) platforms.push('amazonprime');
+                            if (has('alt="Amazon Prime Video"') || has('title="Amazon Prime Video"') || has('alt="Amazon Prime"')) platforms.push('amazonprime');
+                            if (has('alt="Hulu"') || has('title="Hulu"')) platforms.push('hulu');
+                            if (has('alt="Apple TV"') || has('title="Apple TV"')) platforms.push('appletv');
+                            if (has('alt="Peacock"') || has('title="Peacock"')) platforms.push('peacock');
                             
                             console.log('Client found platforms:', platforms);
                             if (platforms.length > 0) {
@@ -1077,7 +1083,11 @@ document.addEventListener('DOMContentLoaded', () => {
             'disneyplus': 'https://m.media-amazon.com/images/I/719t3jd2NeL.png',
             'skyshowtime': 'https://upload.wikimedia.org/wikipedia/commons/5/55/SkyShowtime_Logo.svg',
             'hbomax': 'https://upload.wikimedia.org/wikipedia/commons/1/17/HBO_Max_Logo.svg',
-            'voyo': 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Voyo_Logo.svg'
+            'voyo': 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Voyo_Logo.svg',
+            'amazonprime': 'https://m.media-amazon.com/images/I/411j1k1u9yL.png',
+            'hulu': 'https://upload.wikimedia.org/wikipedia/commons/e/e4/Hulu_Logo.svg',
+            'appletv': 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Apple_TV_app_icon.png',
+            'peacock': 'https://upload.wikimedia.org/wikipedia/commons/d/d3/Peacock_Logo_2020.svg'
         };
         
         let logoUrl = null;
@@ -1310,12 +1320,8 @@ document.addEventListener('DOMContentLoaded', () => {
             modalTrailer.style.display = 'none';
         }
 
-        // JustWatch Button
-        if (movie.title && modalJustWatch) {
-            modalJustWatch.style.display = 'inline-flex';
-            // Use US search as safe default, user can switch region on site if needed
-            modalJustWatch.href = `https://www.justwatch.com/us/search?q=${encodeURIComponent(movie.title)}`;
-        } else if (modalJustWatch) {
+        // JustWatch Button - REMOVED as requested
+        if (modalJustWatch) {
             modalJustWatch.style.display = 'none';
         }
 
