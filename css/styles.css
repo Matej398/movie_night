@@ -441,7 +441,7 @@ input, textarea {
 }
 
 .modal-poster {
-    width: 40%;
+    width: 38%; /* Slightly smaller to crop edges */
     min-height: 500px;
     background: #000 !important; /* Black background to hide any gaps */
     position: relative;
@@ -457,8 +457,8 @@ input, textarea {
     position: absolute !important;
     top: 0 !important;
     left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
+    width: 105% !important; /* Slightly larger to crop edges */
+    height: 105% !important; /* Slightly larger to crop edges */
     object-fit: cover !important;
     object-position: center center !important;
     display: block !important;
@@ -466,6 +466,7 @@ input, textarea {
     padding: 0 !important;
     border: none !important;
     background: transparent !important;
+    transform: translate(-2.5%, -2.5%); /* Center the oversized image */
 }
 
 @media (max-width: 850px) {

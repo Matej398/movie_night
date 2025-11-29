@@ -89,14 +89,13 @@ if (!empty($data['results'])) {
     // Remove duplicates
     $platforms = array_values(array_unique($platforms));
     
+    // Always populate debug data if debug is enabled
     if ($debug) {
         $debugData['all_found_providers_raw'] = array_values(array_unique($allFoundProviders));
-    }
-    
-    if (empty($platforms)) {
-        if ($debug) {
+        $debugData['available_regions'] = $availableRegions;
+        $debugData['platforms_found_count'] = count($platforms);
+        if (empty($platforms)) {
             $debugData['error'] = 'No relevant platforms found in any region';
-            $debugData['available_regions'] = $availableRegions;
         }
     }
 }
