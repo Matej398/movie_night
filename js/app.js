@@ -407,14 +407,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const clientCheck = (async () => {
             try {
                 const searchQuery = encodeURIComponent(title);
-                const proxyUrl = 'https://api.allorigins.win/get?url=';
-                const targetUrl = encodeURIComponent(`https://www.justwatch.com/si/pretrazi?q=${searchQuery}`);
+                // Try primary proxy
+                let proxyUrl = 'https://api.allorigins.win/get?url=';
+                let targetUrl = encodeURIComponent(`https://www.justwatch.com/si/pretrazi?q=${searchQuery}`);
                 
-                console.log('Starting client-side check via proxy...');
-                const res = await fetch(proxyUrl + targetUrl);
+                console.log('Starting client-side check via proxy (allorigins)...');
+                let res = await fetch(proxyUrl + targetUrl);
+                
+                if (!res.ok) {
+                    // Try fallback proxy if first one fails
+                    console.log('Primary proxy failed, trying fallback (corsproxy.io)...');
+                    proxyUrl = 'https://corsproxy.io/?';
+                    targetUrl = `https://www.justwatch.com/si/pretrazi?q=${searchQuery}`; // corsproxy takes raw URL
+                    res = await fetch(proxyUrl + targetUrl);
+                }
+
                 if (res.ok) {
-                    const data = await res.json();
-                    const html = data.contents; 
+                    let html = '';
+                    // Handle different proxy response formats
+                    if (proxyUrl.includes('allorigins')) {
+                        const data = await res.json();
+                        html = data.contents;
+                    } else {
+                        html = await res.text();
+                    }
+                    
+                    console.log('Proxy response received, length:', html.length);
                     
                     if (html && html.length > 100) {
                         const linkMatch = html.match(/href="(\/si\/film\/[^"]+)"/i);
@@ -422,10 +440,18 @@ document.addEventListener('DOMContentLoaded', () => {
                             const moviePath = linkMatch[1];
                             console.log('Client found movie page:', moviePath);
                             
-                            const movieTargetUrl = encodeURIComponent(`https://www.justwatch.com${moviePath}`);
-                            const movieRes = await fetch(proxyUrl + movieTargetUrl);
-                            const movieData = await movieRes.json();
-                            const movieHtml = movieData.contents;
+                            // Fetch movie page
+                            let movieHtml = '';
+                            if (proxyUrl.includes('allorigins')) {
+                                const movieTargetUrl = encodeURIComponent(`https://www.justwatch.com${moviePath}`);
+                                const movieRes = await fetch(proxyUrl + movieTargetUrl);
+                                const movieData = await movieRes.json();
+                                movieHtml = movieData.contents;
+                            } else {
+                                const movieTargetUrl = `https://www.justwatch.com${moviePath}`;
+                                const movieRes = await fetch(proxyUrl + movieTargetUrl);
+                                movieHtml = await movieRes.text();
+                            }
                             
                             const platforms = [];
                             const has = (str) => movieHtml.toLowerCase().includes(str.toLowerCase());
@@ -442,8 +468,12 @@ document.addEventListener('DOMContentLoaded', () => {
                                 updateMoviePlatforms(movieId, platforms.map(p => ({ name: p, url: null })));
                                 return true;
                             }
+                        } else {
+                            console.log('Client check: Movie link regex failed on HTML');
                         }
                     }
+                } else {
+                    console.log('Client proxy request failed:', res.status);
                 }
             } catch (e) {
                 console.error('Client-side platform check failed:', e);
