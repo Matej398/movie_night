@@ -440,15 +440,23 @@ document.addEventListener('DOMContentLoaded', () => {
         // 1. Server Check (Promise) - IMPROVED to check multiple regions
         const serverCheck = (async () => {
             try {
-                const platformUrl = `${STREAMING_CHECK_URL}?title=${encodeURIComponent(title)}${year ? '&year=' + encodeURIComponent(year) : ''}`;
+                const platformUrl = `${STREAMING_CHECK_URL}?title=${encodeURIComponent(title)}${year ? '&year=' + encodeURIComponent(year) : ''}&debug=1`;
                 const res = await fetch(platformUrl);
                 if (res.ok) {
                     const data = await res.json();
                     console.log('Server check result:', data);
+                    if (data.debug && data.debug.all_found_providers_raw) {
+                        console.log('All providers found by TMDB:', data.debug.all_found_providers_raw);
+                    }
                     if (data.platforms && data.platforms.length > 0) {
+                        console.log('Found platforms:', data.platforms);
                         updateMoviePlatforms(movieId, data.platforms);
                         return true;
+                    } else {
+                        console.warn('No platforms found. Check debug data above for what TMDB returned.');
                     }
+                } else {
+                    console.error('Server check failed with status:', res.status);
                 }
             } catch (e) {
                 console.error('Server platform check failed:', e);

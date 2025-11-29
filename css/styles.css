@@ -435,31 +435,37 @@ input, textarea {
 .modal-body {
     display: flex;
     width: 100%;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
 }
 
 .modal-poster {
     width: 40%;
     min-height: 500px;
-    background: transparent !important; /* Remove black/white background */
+    background: #000 !important; /* Black background to hide any gaps */
     position: relative;
-    display: flex;
+    display: block;
     padding: 0 !important;
     margin: 0 !important;
     border: none !important;
     overflow: hidden;
+    flex-shrink: 0;
 }
 
 .modal-poster img {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
     width: 100% !important;
     height: 100% !important;
-    object-fit: cover !important; /* Force cover to fill gaps */
+    object-fit: cover !important;
     object-position: center center !important;
     display: block !important;
     margin: 0 !important;
     padding: 0 !important;
     border: none !important;
     background: transparent !important;
-    border-radius: 24px 0 0 24px; /* Match modal radius on left side */
 }
 
 @media (max-width: 850px) {
