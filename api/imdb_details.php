@@ -15,14 +15,16 @@ if (!$id) {
 // 1. Try curl via shell_exec
 $url = "https://www.imdb.com/title/{$id}/";
 $userAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1';
+$acceptLanguage = 'Accept-Language: en-US,en;q=0.9';
 
 // PERFORMANCE: -4 for IPv4, --compressed for gzip, -m 5 for timeout
-$cmd = 'curl.exe -4 --compressed -m 5 -L -A "' . $userAgent . '" "' . $url . '"';
+// Force English locale with Accept-Language header
+$cmd = 'curl.exe -4 --compressed -m 5 -L -A "' . $userAgent . '" -H "' . $acceptLanguage . '" "' . $url . '"';
 
 $html = shell_exec($cmd);
 
 if (!$html || strlen($html) < 500) {
-    $cmd = 'curl -L -m 5 -A "' . $userAgent . '" "' . $url . '"';
+    $cmd = 'curl -L -m 5 -A "' . $userAgent . '" -H "' . $acceptLanguage . '" "' . $url . '"';
     $html = shell_exec($cmd);
 }
 
@@ -30,6 +32,7 @@ if (!$html || strlen($html) < 500) {
     $options = [
         "http" => [
             "header" => "User-Agent: $userAgent\r\n" .
+                        "Accept-Language: en-US,en;q=0.9\r\n" .
                         "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n",
             "timeout" => 5
         ]
