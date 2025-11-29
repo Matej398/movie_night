@@ -6,9 +6,6 @@ error_reporting(E_ALL);
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
-// CONFIGURATION
-$tmdbApiKey = '987a9d0095e7c36a87a5f23331724658'; 
-
 $title = $_GET['title'] ?? '';
 $year = $_GET['year'] ?? '';
 $debug = isset($_GET['debug']);
@@ -18,92 +15,138 @@ if (empty($title)) {
     exit;
 }
 
-// 1. Search for the movie on TMDB
-$searchUrl = "https://api.themoviedb.org/3/search/movie?api_key={$tmdbApiKey}&query=" . urlencode($title);
-if ($year) {
-    $searchUrl .= "&year=" . urlencode($year);
-}
-
-$ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, $searchUrl);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-$response = curl_exec($ch);
-curl_close($ch);
-
-$data = json_decode($response, true);
 $platforms = [];
 $debugData = [];
 
-if (!empty($data['results'])) {
-    // Get the first result's ID
-    $movieId = $data['results'][0]['id'];
-    $movieTitle = $data['results'][0]['title'];
+// Use US search for broader availability
+$searchQuery = urlencode($title);
+$searchUrl = "https://www.justwatch.com/us/search?q={$searchQuery}";
+
+// Setup curl with proper headers to avoid blocking
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, $searchUrl);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    'Accept-Language: en-US,en;q=0.9',
+    'Accept-Encoding: gzip, deflate, br',
+    'Connection: keep-alive',
+    'Upgrade-Insecure-Requests: 1'
+]);
+
+$html = curl_exec($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
+
+if ($debug) {
+    $debugData['search_url'] = $searchUrl;
+    $debugData['http_code'] = $httpCode;
+    $debugData['html_length'] = strlen($html);
+}
+
+if ($httpCode === 200 && $html && strlen($html) > 100) {
+    // Find movie/TV show link in search results
+    // JustWatch uses patterns like: href="/us/movie/..." or href="/us/tv-show/..."
+    $linkPattern = '/href="(\/us\/(?:movie|tv-show)\/[^"]+)"/i';
     
-    if ($debug) $debugData['tmdb_match'] = $data['results'][0];
-    
-    // 2. Get Watch Providers for this movie
-    $providersUrl = "https://api.themoviedb.org/3/movie/{$movieId}/watch/providers?api_key={$tmdbApiKey}";
-    
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $providersUrl);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $provResponse = curl_exec($ch);
-    curl_close($ch);
-    
-    $provData = json_decode($provResponse, true);
-    
-    if ($debug) $debugData['providers_raw'] = $provData['results'] ?? 'No results';
-    
-    // Check ALL regions for broader availability
-    $availableRegions = isset($provData['results']) ? array_keys($provData['results']) : [];
-    $allFoundProviders = [];
-    
-    foreach ($availableRegions as $region) {
-        if (!isset($provData['results'][$region])) continue;
+    if (preg_match($linkPattern, $html, $matches)) {
+        $moviePath = $matches[1];
+        $movieUrl = "https://www.justwatch.com{$moviePath}";
         
-        $regionData = $provData['results'][$region];
+        if ($debug) {
+            $debugData['movie_path'] = $moviePath;
+            $debugData['movie_url'] = $movieUrl;
+        }
         
-        // Merge all types (flatrate, rent, buy, ads) to find ANY availability
-        $allProviders = [];
-        if (isset($regionData['flatrate'])) $allProviders = array_merge($allProviders, $regionData['flatrate']);
-        if (isset($regionData['rent'])) $allProviders = array_merge($allProviders, $regionData['rent']);
-        if (isset($regionData['buy'])) $allProviders = array_merge($allProviders, $regionData['buy']);
-        if (isset($regionData['ads'])) $allProviders = array_merge($allProviders, $regionData['ads']); // Free with ads
+        // Fetch the movie detail page
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $movieUrl);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language: en-US,en;q=0.9',
+            'Accept-Encoding: gzip, deflate, br',
+            'Connection: keep-alive',
+            'Upgrade-Insecure-Requests: 1'
+        ]);
         
-        foreach ($allProviders as $provider) {
-            $rawName = $provider['provider_name'];
-            $name = strtolower(str_replace([' ', '+', '-'], '', $rawName)); // Normalize: "Disney Plus" -> "disneyplus"
+        $movieHtml = curl_exec($ch);
+        $movieHttpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        
+        if ($debug) {
+            $debugData['movie_http_code'] = $movieHttpCode;
+            $debugData['movie_html_length'] = strlen($movieHtml);
+        }
+        
+        if ($movieHttpCode === 200 && $movieHtml && strlen($movieHtml) > 100) {
+            // Convert to lowercase for case-insensitive matching
+            $htmlLower = strtolower($movieHtml);
             
-            $allFoundProviders[] = $rawName;
+            // Check for platforms in HTML (multiple patterns to catch different formats)
+            if (stripos($htmlLower, 'netflix') !== false || 
+                preg_match('/alt=["\']netflix["\']/i', $movieHtml) ||
+                preg_match('/title=["\']netflix["\']/i', $movieHtml)) {
+                $platforms[] = 'netflix';
+            }
             
-            // Map TMDB names to our internal IDs with loose matching
-            if (strpos($name, 'netflix') !== false) $platforms[] = 'netflix';
-            elseif (strpos($name, 'disney') !== false) $platforms[] = 'disneyplus';
-            elseif (strpos($name, 'sky') !== false || strpos($name, 'showtime') !== false) $platforms[] = 'skyshowtime';
-            elseif (strpos($name, 'hbo') !== false || strpos($name, 'max') !== false) $platforms[] = 'hbomax';
-            elseif (strpos($name, 'voyo') !== false) $platforms[] = 'voyo';
-            elseif (strpos($name, 'amazon') !== false || strpos($name, 'prime') !== false) $platforms[] = 'amazonprime';
+            if (stripos($htmlLower, 'disney') !== false || 
+                stripos($htmlLower, 'disney+') !== false ||
+                preg_match('/alt=["\']disney\s*plus["\']/i', $movieHtml) ||
+                preg_match('/title=["\']disney\s*plus["\']/i', $movieHtml)) {
+                $platforms[] = 'disneyplus';
+            }
+            
+            if (stripos($htmlLower, 'skyshowtime') !== false || 
+                stripos($htmlLower, 'sky showtime') !== false ||
+                preg_match('/alt=["\']skyshowtime["\']/i', $movieHtml)) {
+                $platforms[] = 'skyshowtime';
+            }
+            
+            if (stripos($htmlLower, 'hbo max') !== false || 
+                stripos($htmlLower, 'max') !== false ||
+                preg_match('/alt=["\']hbo\s*max["\']/i', $movieHtml) ||
+                preg_match('/alt=["\']max["\']/i', $movieHtml)) {
+                $platforms[] = 'hbomax';
+            }
+            
+            if (stripos($htmlLower, 'voyo') !== false ||
+                preg_match('/alt=["\']voyo["\']/i', $movieHtml)) {
+                $platforms[] = 'voyo';
+            }
+            
+            // Remove duplicates
+            $platforms = array_values(array_unique($platforms));
+            
+            if ($debug) {
+                $debugData['platforms_found'] = $platforms;
+            }
+        } else {
+            if ($debug) {
+                $debugData['error'] = 'Failed to fetch movie detail page';
+            }
+        }
+    } else {
+        if ($debug) {
+            $debugData['error'] = 'Movie link not found in search results';
         }
     }
-    
-    // Remove duplicates
-    $platforms = array_values(array_unique($platforms));
-    
-    // Always populate debug data if debug is enabled
+} else {
     if ($debug) {
-        $debugData['all_found_providers_raw'] = array_values(array_unique($allFoundProviders));
-        $debugData['available_regions'] = $availableRegions;
-        $debugData['platforms_found_count'] = count($platforms);
-        if (empty($platforms)) {
-            $debugData['error'] = 'No relevant platforms found in any region';
-        }
+        $debugData['error'] = 'Failed to fetch search page';
     }
 }
 
 $output = [
-    'platforms' => array_values(array_unique($platforms)),
+    'platforms' => $platforms,
     'title' => $title,
-    'tmdb_used' => true
+    'justwatch_used' => true
 ];
 
 if ($debug) {
