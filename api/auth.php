@@ -1,4 +1,8 @@
 <?php
+// Set session lifetime to 7 days before starting session
+ini_set('session.gc_maxlifetime', 604800);
+session_set_cookie_params(604800);
+
 session_start();
 header('Content-Type: application/json');
 require_once 'db.php';
@@ -34,6 +38,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Auto login
             $_SESSION['user_id'] = $pdo->lastInsertId();
             $_SESSION['username'] = $username;
+            
+            // Set 7-day cookie
+            $token = bin2hex(random_bytes(32));
+            // In a real app, store this token in DB. For simple use, we rely on session cookie lifetime.
+            // But here we extend session cookie lifetime:
+            $params = session_get_cookie_params();
+            setcookie(session_name(), session_id(), time() + (7 * 24 * 60 * 60), $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
+            
             echo json_encode(['success' => true, 'username' => $username]);
         } else {
             http_response_code(500);
@@ -51,6 +63,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($user && password_verify($password, $user['password'])) {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
+            
+            // Extend session cookie to 7 days
+            $params = session_get_cookie_params();
+            setcookie(session_name(), session_id(), time() + (7 * 24 * 60 * 60), $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
+            
             echo json_encode(['success' => true, 'username' => $user['username']]);
         } else {
             http_response_code(401);
