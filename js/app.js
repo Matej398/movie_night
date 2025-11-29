@@ -520,10 +520,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (has('alt="SkyShowtime"') || has('title="SkyShowtime"')) platforms.push('skyshowtime');
                             if (has('alt="HBO Max"') || has('title="HBO Max"') || has('alt="Max"') || has('title="Max"')) platforms.push('hbomax');
                             if (has('alt="Voyo"') || has('title="Voyo"')) platforms.push('voyo');
-                            if (has('alt="Amazon Prime Video"') || has('title="Amazon Prime Video"') || has('alt="Amazon Prime"')) platforms.push('amazonprime');
-                            if (has('alt="Hulu"') || has('title="Hulu"')) platforms.push('hulu');
-                            if (has('alt="Apple TV"') || has('title="Apple TV"')) platforms.push('appletv');
-                            if (has('alt="Peacock"') || has('title="Peacock"')) platforms.push('peacock');
                             
                             console.log('Client found platforms:', platforms);
                             if (platforms.length > 0) {
@@ -1083,11 +1079,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'disneyplus': 'https://m.media-amazon.com/images/I/719t3jd2NeL.png',
             'skyshowtime': 'https://upload.wikimedia.org/wikipedia/commons/5/55/SkyShowtime_Logo.svg',
             'hbomax': 'https://upload.wikimedia.org/wikipedia/commons/1/17/HBO_Max_Logo.svg',
-            'voyo': 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Voyo_Logo.svg',
-            'amazonprime': 'https://m.media-amazon.com/images/I/411j1k1u9yL.png',
-            'hulu': 'https://upload.wikimedia.org/wikipedia/commons/e/e4/Hulu_Logo.svg',
-            'appletv': 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Apple_TV_app_icon.png',
-            'peacock': 'https://upload.wikimedia.org/wikipedia/commons/d/d3/Peacock_Logo_2020.svg'
+            'voyo': 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Voyo_Logo.svg'
         };
         
         let logoUrl = null;
