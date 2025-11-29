@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalGenre = document.getElementById('modal-genre');
     const modalDesc = document.getElementById('modal-desc');
     const modalTrailer = document.getElementById('modal-trailer');
-    const modalJustWatch = document.getElementById('modal-justwatch');
+    // const modalJustWatch = document.getElementById('modal-justwatch'); // Removed
     const modalToggleStatus = document.getElementById('modal-toggle-status');
     const modalDelete = document.getElementById('modal-delete');
     
@@ -1312,10 +1312,7 @@ document.addEventListener('DOMContentLoaded', () => {
             modalTrailer.style.display = 'none';
         }
 
-        // JustWatch Button - REMOVED as requested
-        if (modalJustWatch) {
-            modalJustWatch.style.display = 'none';
-        }
+        // JustWatch Button logic removed
 
         if (currentView === 'to_watch') {
             modalToggleStatus.innerHTML = icons.check + ' Mark as Watched';
