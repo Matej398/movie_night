@@ -931,32 +931,35 @@ document.addEventListener('DOMContentLoaded', () => {
             img.className = 'movie-poster';
             img.loading = 'lazy'; // Native lazy loading
             img.decoding = 'async';
-            // Use optimized URL for cards (width 400 is enough for 220px wide cards)
-            let imageUrl = getOptimizedImageUrl(movie.image_url, 400);
-            img.src = imageUrl;
             
-            // Check if image might be German and try to get English version from TMDB
-            // This is a fallback if URL transformation doesn't work
-            img.onerror = async function() {
+            // Check if it's an IMDb/Amazon image - proactively get English version from TMDB
+            // This ensures we always get English posters, not German ones
+            const isImdbImage = movie.image_url.includes('media-amazon.com');
+            
+            if (isImdbImage) {
+                // Try to get English poster from TMDB first
+                fetch(`api/get_english_poster.php?title=${encodeURIComponent(movie.title)}${movie.year ? '&year=' + encodeURIComponent(movie.year) : ''}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success && data.image_url) {
+                            img.src = data.image_url;
+                        } else {
+                            // Fallback to transformed IMDb URL
+                            img.src = getOptimizedImageUrl(movie.image_url, 400);
+                        }
+                    })
+                    .catch(() => {
+                        // Fallback to transformed IMDb URL if TMDB fails
+                        img.src = getOptimizedImageUrl(movie.image_url, 400);
+                    });
+            } else {
+                // Not an IMDb image, use as-is
+                img.src = getOptimizedImageUrl(movie.image_url, 400);
+            }
+            
+            img.onerror = function() {
                 if (!this.classList.contains('image-error-handled')) {
                     this.classList.add('image-error-handled');
-                    // Try to get English poster from TMDB
-                    try {
-                        const tmdbUrl = `api/get_english_poster.php?title=${encodeURIComponent(movie.title)}${movie.year ? '&year=' + encodeURIComponent(movie.year) : ''}`;
-                        const response = await fetch(tmdbUrl);
-                        if (response.ok) {
-                            const data = await response.json();
-                            if (data.success && data.image_url) {
-                                this.src = data.image_url;
-                                this.classList.remove('image-error-handled');
-                                return;
-                            }
-                        }
-                    } catch (e) {
-                        console.warn('Failed to fetch English poster from TMDB:', e);
-                    }
-                    
-                    // If TMDB fails, show placeholder
                     if (this.parentElement) {
                         this.parentElement.classList.add('loaded'); // Stop shimmer
                         const placeholder = document.createElement('div');
