@@ -121,18 +121,6 @@ nav button.active {
     color: var(--text-main);
     font-weight: 500;
     font-size: 0.95rem;
-    padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: var(--btn-radius);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-#user-display-name::before {
-    content: '👤';
-    font-size: 1rem;
 }
 
 #logout-btn {
