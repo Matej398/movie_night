@@ -55,7 +55,6 @@ if (!empty($data['results'])) {
     if ($debug) $debugData['providers_raw'] = $provData['results'] ?? 'No results';
     
     // Check Slovenia (SI)
-    // If SI is missing, maybe check US or global just to see if API works?
     if (isset($provData['results']['SI'])) {
         $siData = $provData['results']['SI'];
         
@@ -78,7 +77,10 @@ if (!empty($data['results'])) {
             elseif (strpos($name, 'amazon') !== false) $platforms[] = 'amazonprime';
         }
     } else {
-        if ($debug) $debugData['error'] = 'No SI data found in TMDB response';
+        if ($debug) {
+            $debugData['error'] = 'No SI data found in TMDB response';
+            $debugData['available_regions'] = isset($provData['results']) ? array_keys($provData['results']) : [];
+        }
     }
 }
 

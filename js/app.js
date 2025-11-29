@@ -127,6 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalGenre = document.getElementById('modal-genre');
     const modalDesc = document.getElementById('modal-desc');
     const modalTrailer = document.getElementById('modal-trailer');
+    const modalJustWatch = document.getElementById('modal-justwatch');
     const modalToggleStatus = document.getElementById('modal-toggle-status');
     const modalDelete = document.getElementById('modal-delete');
     
@@ -1184,6 +1185,14 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         } else {
             modalTrailer.style.display = 'none';
+        }
+
+        // JustWatch Button
+        if (movie.title && modalJustWatch) {
+            modalJustWatch.style.display = 'inline-flex';
+            modalJustWatch.href = `https://www.justwatch.com/si/pretrazi?q=${encodeURIComponent(movie.title)}`;
+        } else if (modalJustWatch) {
+            modalJustWatch.style.display = 'none';
         }
 
         if (currentView === 'to_watch') {
