@@ -135,8 +135,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Auth Elements
     const userDisplayName = document.getElementById('user-display-name');
+    const mobileUserDisplayName = document.getElementById('mobile-user-display-name');
     const logoutBtn = document.getElementById('logout-btn');
     const logoutBtnDesktop = document.getElementById('logout-btn-desktop');
+    const mobileMenuClose = document.getElementById('mobile-menu-close');
 
     let movies = [];
     let currentView = 'to_watch'; 
@@ -158,6 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.href = 'login.html';
             } else {
                 if (userDisplayName) userDisplayName.textContent = data.username;
+                if (mobileUserDisplayName) mobileUserDisplayName.textContent = data.username;
                 // Load movies only after auth check passes
                 fetchMovies();
             }
@@ -552,30 +555,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Mobile menu toggle
     if (mobileMenuToggle && mainNav) {
-        mobileMenuToggle.addEventListener('click', () => {
-            mainNav.classList.toggle('mobile-open');
-        });
+        const openMobileMenu = () => {
+            mainNav.classList.add('mobile-open');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        };
+        
+        const closeMobileMenu = () => {
+            mainNav.classList.remove('mobile-open');
+            document.body.style.overflow = ''; // Restore scrolling
+        };
+        
+        mobileMenuToggle.addEventListener('click', openMobileMenu);
+        
+        if (mobileMenuClose) {
+            mobileMenuClose.addEventListener('click', closeMobileMenu);
+        }
         
         // Close mobile menu when clicking nav buttons or logout
-        const closeMobileMenu = () => {
+        const closeMobileMenuOnAction = () => {
             if (window.innerWidth <= 850) {
-                mainNav.classList.remove('mobile-open');
+                closeMobileMenu();
             }
         };
         
-        navLibrary.addEventListener('click', closeMobileMenu);
-        navWatched.addEventListener('click', closeMobileMenu);
+        navLibrary.addEventListener('click', closeMobileMenuOnAction);
+        navWatched.addEventListener('click', closeMobileMenuOnAction);
         if (logoutBtn) {
-            logoutBtn.addEventListener('click', closeMobileMenu);
+            // Remove the closeMobileMenu listener if it exists, then add new one
+            logoutBtn.addEventListener('click', closeMobileMenuOnAction);
         }
         
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', (e) => {
-            if (window.innerWidth <= 850 && 
-                !mainNav.contains(e.target) && 
-                !mobileMenuToggle.contains(e.target) &&
-                mainNav.classList.contains('mobile-open')) {
-                mainNav.classList.remove('mobile-open');
+        // Close mobile menu when clicking outside (on overlay)
+        mainNav.addEventListener('click', (e) => {
+            if (e.target === mainNav) {
+                closeMobileMenu();
+            }
+        });
+        
+        // Close on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && mainNav.classList.contains('mobile-open')) {
+                closeMobileMenu();
             }
         });
     }
