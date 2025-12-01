@@ -109,8 +109,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const genreFilter = document.getElementById('genre-filter');
     const navLibrary = document.getElementById('nav-library');
     const navWatched = document.getElementById('nav-watched');
+    const navLibraryMobile = document.getElementById('nav-library-mobile');
+    const navWatchedMobile = document.getElementById('nav-watched-mobile');
     const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
     const mainNav = document.getElementById('main-nav');
+    const logoutBtnMobile = document.getElementById('logout-btn-mobile');
     const imdbSearchInput = document.getElementById('imdb-search');
     const imdbResults = document.getElementById('imdb-results');
     
@@ -578,11 +581,23 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
         
-        navLibrary.addEventListener('click', closeMobileMenuOnAction);
-        navWatched.addEventListener('click', closeMobileMenuOnAction);
-        if (logoutBtn) {
-            // Remove the closeMobileMenu listener if it exists, then add new one
-            logoutBtn.addEventListener('click', closeMobileMenuOnAction);
+        if (navLibraryMobile) {
+            navLibraryMobile.addEventListener('click', () => {
+                if (navLibrary) navLibrary.click();
+                closeMobileMenuOnAction();
+            });
+        }
+        if (navWatchedMobile) {
+            navWatchedMobile.addEventListener('click', () => {
+                if (navWatched) navWatched.click();
+                closeMobileMenuOnAction();
+            });
+        }
+        if (logoutBtnMobile) {
+            logoutBtnMobile.addEventListener('click', () => {
+                handleLogout();
+                closeMobileMenuOnAction();
+            });
         }
         
         // Close mobile menu when clicking outside (on overlay)
@@ -612,13 +627,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function updateNavState() {
+        const setActive = (active, inactive) => {
+            if (active) active.classList.add('active');
+            if (inactive) inactive.classList.remove('active');
+        };
+        
         if (currentView === 'to_watch') {
-            navLibrary.classList.add('active');
-            navWatched.classList.remove('active');
+            setActive(navLibrary, navWatched);
+            setActive(navLibraryMobile, navWatchedMobile);
             openAddModalBtn.style.display = 'flex'; 
         } else {
-            navLibrary.classList.remove('active');
-            navWatched.classList.add('active');
+            setActive(navWatched, navLibrary);
+            setActive(navWatchedMobile, navLibraryMobile);
             openAddModalBtn.style.display = 'none'; 
         }
     }

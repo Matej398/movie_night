@@ -88,6 +88,14 @@ nav {
     border-radius: var(--btn-radius);
 }
 
+#desktop-nav {
+    display: flex;
+}
+
+#main-nav {
+    display: none; /* Hidden on desktop, shown on mobile */
+}
+
 .mobile-menu-toggle {
     display: none;
 }
@@ -1119,11 +1127,11 @@ a.platform-badge.platform-unavailable:hover {
     
     /* Header Mobile */
     header {
-        padding: 12px 20px;
-        margin-left: -20px;
-        margin-right: -20px;
-        padding-left: 20px;
-        padding-right: 20px;
+        padding: 12px 40px;
+        margin-left: -40px;
+        margin-right: -40px;
+        padding-left: 40px;
+        padding-right: 40px;
         position: relative;
     }
     
@@ -1133,6 +1141,14 @@ a.platform-badge.platform-unavailable:hover {
     
     .logo {
         gap: 0;
+    }
+    
+    #desktop-nav {
+        display: none; /* Hide desktop nav on mobile */
+    }
+    
+    #main-nav {
+        display: block; /* Show mobile menu structure */
     }
     
     .mobile-menu-toggle {
@@ -1145,8 +1161,10 @@ a.platform-badge.platform-unavailable:hover {
         align-items: center;
         justify-content: center;
         margin-left: auto;
-        margin-right: 28px;
+        margin-right: 0;
         transition: var(--transition);
+        position: relative;
+        right: 0;
     }
     
     .mobile-menu-toggle:hover {
