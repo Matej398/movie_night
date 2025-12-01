@@ -286,6 +286,7 @@ select:hover {
     padding: 12px 24px;
     border-radius: var(--btn-radius);
     font-weight: 500;
+    font-size: 0.95rem;
     cursor: pointer;
     transition: var(--transition);
 }
@@ -1176,30 +1177,32 @@ a.platform-badge.platform-unavailable:hover {
         height: 24px;
     }
     
-    nav {
+    #main-nav {
         position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
         width: 100%;
         height: 100vh;
+        max-height: 100vh;
         background: rgba(0, 0, 0, 0.98);
         backdrop-filter: saturate(180%) blur(20px);
         -webkit-backdrop-filter: saturate(180%) blur(20px);
         padding: 0;
         margin: 0;
-        border-radius: 0;
-        display: none;
+        border-radius: 24px 24px 0 0;
+        display: flex;
         flex-direction: column;
         z-index: 200;
         transform: translateY(100%);
-        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        overflow-y: auto;
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        overflow: hidden;
+        pointer-events: none;
     }
     
-    nav.mobile-open {
-        display: flex;
+    #main-nav.mobile-open {
         transform: translateY(0);
+        pointer-events: auto;
     }
     
     .mobile-menu-header {
@@ -1246,6 +1249,7 @@ a.platform-badge.platform-unavailable:hover {
         padding: 20px;
         gap: 12px;
         flex: 1;
+        overflow-y: auto;
     }
     
     .mobile-menu-item {
@@ -1287,21 +1291,24 @@ a.platform-badge.platform-unavailable:hover {
         flex: 1;
     }
     
-    nav .mobile-logout {
+    #main-nav .mobile-logout {
         margin-top: auto;
-        background: rgba(255, 59, 48, 0.1);
-        border-color: rgba(255, 59, 48, 0.3);
-        color: var(--danger);
+        padding-top: 20px;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--text-main);
     }
     
-    nav .mobile-logout:hover {
-        background: rgba(255, 59, 48, 0.2);
-        border-color: rgba(255, 59, 48, 0.5);
+    #main-nav .mobile-logout:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: scale(1.02);
     }
     
-    nav .mobile-logout svg {
-        width: 20px;
-        height: 20px;
+    #main-nav .mobile-logout svg {
+        width: 18px;
+        height: 18px;
     }
     
     .user-menu {

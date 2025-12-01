@@ -26,3 +26,5 @@ CREATE TABLE IF NOT EXISTS `movies` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
+
+
