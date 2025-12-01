@@ -128,6 +128,10 @@ nav button.active {
 }
 
 #logout-btn {
+    display: none; /* Hide mobile logout button on desktop */
+}
+
+#logout-btn-desktop {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text-main);
@@ -140,15 +144,20 @@ nav button.active {
     transition: var(--transition);
 }
 
-#logout-btn:hover {
+#logout-btn-desktop:hover {
     background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.2);
     transform: scale(1.05);
 }
 
-#logout-btn svg {
+#logout-btn-desktop svg {
     width: 18px;
     height: 18px;
+}
+
+/* Hide mobile logout button in nav on desktop */
+nav .mobile-logout {
+    display: none;
 }
 
 /* Controls Row */
@@ -1011,7 +1020,7 @@ a.platform-badge.platform-unavailable:hover {
         flex-direction: column;
         gap: 20px;
         align-items: stretch;
-        margin-bottom: 80px; /* Add space for floating button */
+        margin-bottom: 20px; /* Reduced spacing since button is floating */
     }
     
     .controls-row #open-add-modal {
@@ -1136,7 +1145,7 @@ a.platform-badge.platform-unavailable:hover {
         align-items: center;
         justify-content: center;
         margin-left: auto;
-        margin-right: 12px;
+        margin-right: 20px;
         transition: var(--transition);
     }
     
@@ -1192,6 +1201,7 @@ a.platform-badge.platform-unavailable:hover {
         display: none; /* Hide desktop logout button on mobile */
     }
     
+    /* Show mobile logout button in nav menu */
     nav .mobile-logout {
         display: flex;
         align-items: center;
