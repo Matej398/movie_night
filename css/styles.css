@@ -1011,6 +1011,11 @@ a.platform-badge.platform-unavailable:hover {
         flex-direction: column;
         gap: 20px;
         align-items: stretch;
+        margin-bottom: 80px; /* Add space for floating button */
+    }
+    
+    .controls-row #open-add-modal {
+        display: none; /* Hide the button in controls row on mobile */
     }
     #filter-bar {
         max-width: 100%;
@@ -1071,6 +1076,36 @@ a.platform-badge.platform-unavailable:hover {
     .btn-action {
         padding: 12px;
         font-size: 0.9rem;
+        white-space: nowrap;
+    }
+    
+    .modal-status-actions {
+        flex-wrap: nowrap;
+    }
+    
+    /* Floating Add Movie Button on Mobile */
+    #open-add-modal {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        padding: 0;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 16px rgba(0, 113, 227, 0.4);
+        z-index: 90;
+    }
+    
+    #open-add-modal svg {
+        width: 24px;
+        height: 24px;
+    }
+    
+    #open-add-modal .btn-text {
+        display: none;
     }
     
     /* Header Mobile */
@@ -1093,11 +1128,10 @@ a.platform-badge.platform-unavailable:hover {
     
     .mobile-menu-toggle {
         display: flex;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: transparent;
+        border: none;
         color: var(--text-main);
         padding: 8px;
-        border-radius: 8px;
         cursor: pointer;
         align-items: center;
         justify-content: center;
@@ -1107,13 +1141,12 @@ a.platform-badge.platform-unavailable:hover {
     }
     
     .mobile-menu-toggle:hover {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: rgba(255, 255, 255, 0.2);
+        opacity: 0.7;
     }
     
     .mobile-menu-toggle svg {
-        width: 20px;
-        height: 20px;
+        width: 24px;
+        height: 24px;
     }
     
     nav {
@@ -1152,16 +1185,38 @@ a.platform-badge.platform-unavailable:hover {
     
     #user-display-name {
         font-size: 0.85rem;
-        display: none; /* Hide username text on mobile, keep logout button */
+        display: none; /* Hide username on mobile */
     }
     
-    #logout-btn {
-        padding: 8px;
+    #logout-btn-desktop {
+        display: none; /* Hide desktop logout button on mobile */
     }
     
-    #logout-btn svg {
-        width: 16px;
-        height: 16px;
+    nav .mobile-logout {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 4px;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        padding-top: 16px;
+        background: rgba(255, 59, 48, 0.1);
+        border-color: rgba(255, 59, 48, 0.3);
+    }
+    
+    nav .mobile-logout:hover {
+        background: rgba(255, 59, 48, 0.2);
+        border-color: rgba(255, 59, 48, 0.5);
+    }
+    
+    nav .mobile-logout svg {
+        width: 18px;
+        height: 18px;
+    }
+    
+    nav .mobile-logout span {
+        font-size: 0.95rem;
+        font-weight: 500;
     }
 }
 
