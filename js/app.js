@@ -558,59 +558,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Mobile menu toggle
     if (mobileMenuToggle && mainNav) {
-        const openMobileMenu = () => {
-            mainNav.classList.add('mobile-open');
-            document.body.style.overflow = 'hidden'; // Prevent background scrolling
-        };
-        
-        const closeMobileMenu = () => {
-            mainNav.classList.remove('mobile-open');
-            document.body.style.overflow = ''; // Restore scrolling
-        };
-        
-        mobileMenuToggle.addEventListener('click', openMobileMenu);
-        
-        if (mobileMenuClose) {
-            mobileMenuClose.addEventListener('click', closeMobileMenu);
-        }
+        mobileMenuToggle.addEventListener('click', () => {
+            mainNav.classList.toggle('mobile-open');
+        });
         
         // Close mobile menu when clicking nav buttons or logout
-        const closeMobileMenuOnAction = () => {
+        const closeMobileMenu = () => {
             if (window.innerWidth <= 850) {
-                closeMobileMenu();
+                mainNav.classList.remove('mobile-open');
             }
         };
         
         if (navLibraryMobile) {
             navLibraryMobile.addEventListener('click', () => {
                 if (navLibrary) navLibrary.click();
-                closeMobileMenuOnAction();
+                closeMobileMenu();
             });
         }
         if (navWatchedMobile) {
             navWatchedMobile.addEventListener('click', () => {
                 if (navWatched) navWatched.click();
-                closeMobileMenuOnAction();
+                closeMobileMenu();
             });
         }
         if (logoutBtnMobile) {
             logoutBtnMobile.addEventListener('click', () => {
                 handleLogout();
-                closeMobileMenuOnAction();
+                closeMobileMenu();
             });
         }
         
-        // Close mobile menu when clicking outside (on overlay)
-        mainNav.addEventListener('click', (e) => {
-            if (e.target === mainNav) {
-                closeMobileMenu();
-            }
-        });
-        
-        // Close on escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && mainNav.classList.contains('mobile-open')) {
-                closeMobileMenu();
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 850 && 
+                !mainNav.contains(e.target) && 
+                !mobileMenuToggle.contains(e.target) &&
+                mainNav.classList.contains('mobile-open')) {
+                mainNav.classList.remove('mobile-open');
             }
         });
     }
