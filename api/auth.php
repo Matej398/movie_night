@@ -1,7 +1,14 @@
 <?php
-// Set session lifetime to 7 days before starting session
-ini_set('session.gc_maxlifetime', 604800);
-session_set_cookie_params(604800);
+// Set session lifetime to 30 days before starting session
+ini_set('session.gc_maxlifetime', 2592000); // 30 days in seconds
+session_set_cookie_params([
+    'lifetime' => 2592000, // 30 days
+    'path' => '/',
+    'domain' => '',
+    'secure' => isset($_SERVER['HTTPS']),
+    'httponly' => true,
+    'samesite' => 'Lax'
+]);
 
 session_start();
 header('Content-Type: application/json');
@@ -39,12 +46,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_id'] = $pdo->lastInsertId();
             $_SESSION['username'] = $username;
             
-            // Set 7-day cookie
-            $token = bin2hex(random_bytes(32));
-            // In a real app, store this token in DB. For simple use, we rely on session cookie lifetime.
-            // But here we extend session cookie lifetime:
+            // Set 30-day cookie
             $params = session_get_cookie_params();
-            setcookie(session_name(), session_id(), time() + (7 * 24 * 60 * 60), $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
+            setcookie(session_name(), session_id(), time() + 2592000, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
             
             echo json_encode(['success' => true, 'username' => $username]);
         } else {
@@ -64,9 +68,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             
-            // Extend session cookie to 7 days
+            // Extend session cookie to 30 days
             $params = session_get_cookie_params();
-            setcookie(session_name(), session_id(), time() + (7 * 24 * 60 * 60), $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
+            setcookie(session_name(), session_id(), time() + 2592000, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
             
             echo json_encode(['success' => true, 'username' => $user['username']]);
         } else {

@@ -1,4 +1,15 @@
 <?php
+// Set session lifetime to 30 days
+ini_set('session.gc_maxlifetime', 2592000);
+session_set_cookie_params([
+    'lifetime' => 2592000,
+    'path' => '/',
+    'domain' => '',
+    'secure' => isset($_SERVER['HTTPS']),
+    'httponly' => true,
+    'samesite' => 'Lax'
+]);
+
 session_start();
 header('Content-Type: application/json');
 require_once 'db.php';

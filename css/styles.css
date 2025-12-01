@@ -88,6 +88,10 @@ nav {
     border-radius: var(--btn-radius);
 }
 
+.mobile-menu-toggle {
+    display: none;
+}
+
 nav button {
     background: none;
     border: none;
@@ -507,6 +511,10 @@ input, textarea {
 }
 
 @media (max-width: 850px) {
+    .modal-poster {
+        border-radius: 24px 24px 0 0; /* Top radius for mobile */
+    }
+    
     .modal-poster img {
         border-radius: 24px 24px 0 0; /* Top radius for mobile */
     }
@@ -1014,14 +1022,26 @@ a.platform-badge.platform-unavailable:hover {
         max-height: 90vh;
         overflow-y: auto;
     }
+    .modal-body {
+        flex-direction: column !important;
+    }
     .modal-poster {
-        width: 100%;
+        width: 100% !important;
         height: 350px;
-        min-height: auto;
+        min-height: 350px;
+        flex-shrink: 0;
     }
     .modal-info {
-        width: 100%;
-        padding: 30px;
+        width: 100% !important;
+        padding: 24px 20px;
+        flex: 1;
+        overflow-y: auto;
+    }
+    .modal-info h2 {
+        font-size: 1.75rem;
+    }
+    .modal-meta {
+        font-size: 0.9rem;
     }
     .app-container {
         padding: 0 20px 20px;
@@ -1032,6 +1052,116 @@ a.platform-badge.platform-unavailable:hover {
     }
     .card-image {
         height: 240px;
+    }
+    
+    .btn-primary {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+    
+    .modal-actions {
+        gap: 12px;
+    }
+    
+    .btn-trailer {
+        padding: 12px 24px;
+        font-size: 0.95rem;
+    }
+    
+    .btn-action {
+        padding: 12px;
+        font-size: 0.9rem;
+    }
+    
+    /* Header Mobile */
+    header {
+        padding: 12px 20px;
+        margin-left: -20px;
+        margin-right: -20px;
+        padding-left: 20px;
+        padding-right: 20px;
+        position: relative;
+    }
+    
+    .logo h1 {
+        display: none;
+    }
+    
+    .logo {
+        gap: 0;
+    }
+    
+    .mobile-menu-toggle {
+        display: flex;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--text-main);
+        padding: 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        margin-left: auto;
+        margin-right: 12px;
+        transition: var(--transition);
+    }
+    
+    .mobile-menu-toggle:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    .mobile-menu-toggle svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    nav {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        backdrop-filter: saturate(180%) blur(20px);
+        -webkit-backdrop-filter: saturate(180%) blur(20px);
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding: 12px 20px;
+        margin: 0;
+        border-radius: 0;
+        display: none;
+        flex-direction: column;
+        gap: 8px;
+        z-index: 100;
+    }
+    
+    nav.mobile-open {
+        display: flex;
+    }
+    
+    nav button {
+        width: 100%;
+        padding: 12px;
+        text-align: center;
+        border-radius: 12px;
+    }
+    
+    .user-menu {
+        gap: 8px;
+    }
+    
+    #user-display-name {
+        font-size: 0.85rem;
+        display: none; /* Hide username text on mobile, keep logout button */
+    }
+    
+    #logout-btn {
+        padding: 8px;
+    }
+    
+    #logout-btn svg {
+        width: 16px;
+        height: 16px;
     }
 }
 

@@ -109,6 +109,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const genreFilter = document.getElementById('genre-filter');
     const navLibrary = document.getElementById('nav-library');
     const navWatched = document.getElementById('nav-watched');
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const mainNav = document.getElementById('main-nav');
     const imdbSearchInput = document.getElementById('imdb-search');
     const imdbResults = document.getElementById('imdb-results');
     
@@ -542,6 +544,35 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     genreFilter.addEventListener('change', () => renderMovies(false));
 
+    // Mobile menu toggle
+    if (mobileMenuToggle && mainNav) {
+        mobileMenuToggle.addEventListener('click', () => {
+            mainNav.classList.toggle('mobile-open');
+        });
+        
+        // Close mobile menu when clicking nav buttons
+        navLibrary.addEventListener('click', () => {
+            if (window.innerWidth <= 850) {
+                mainNav.classList.remove('mobile-open');
+            }
+        });
+        navWatched.addEventListener('click', () => {
+            if (window.innerWidth <= 850) {
+                mainNav.classList.remove('mobile-open');
+            }
+        });
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 850 && 
+                !mainNav.contains(e.target) && 
+                !mobileMenuToggle.contains(e.target) &&
+                mainNav.classList.contains('mobile-open')) {
+                mainNav.classList.remove('mobile-open');
+            }
+        });
+    }
+    
     navLibrary.addEventListener('click', () => {
         currentView = 'to_watch';
         updateNavState();
