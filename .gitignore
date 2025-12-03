@@ -15,5 +15,8 @@ config.php
 .env
 api/db.php
 
+# Session files
+sessions/
+
 # Data (optional, if you want to keep data local)
 # data/

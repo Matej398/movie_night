@@ -1,8 +1,18 @@
 <?php
-// Set session lifetime to 30 days
-ini_set('session.gc_maxlifetime', 2592000);
+// Set session lifetime to 14 days
+ini_set('session.gc_maxlifetime', 1209600);
+ini_set('session.gc_probability', 1); // Run GC on 1% of requests
+ini_set('session.gc_divisor', 100);
+
+// Set custom session save path to prevent system cleanup
+$sessionPath = __DIR__ . '/../sessions';
+if (!is_dir($sessionPath)) {
+    mkdir($sessionPath, 0700, true);
+}
+ini_set('session.save_path', $sessionPath);
+
 session_set_cookie_params([
-    'lifetime' => 2592000,
+    'lifetime' => 1209600,
     'path' => '/',
     'domain' => '',
     'secure' => isset($_SERVER['HTTPS']),
@@ -20,6 +30,13 @@ if (!isset($_SESSION['user_id'])) {
     echo json_encode(['error' => 'Unauthorized']);
     exit;
 }
+
+// Update session last access time to prevent garbage collection
+$_SESSION['last_access'] = time();
+
+// Refresh session cookie on each authenticated request to keep it alive
+$params = session_get_cookie_params();
+setcookie(session_name(), session_id(), time() + 1209600, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
 
 $user_id = $_SESSION['user_id'];
 $method = $_SERVER['REQUEST_METHOD'];

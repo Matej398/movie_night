@@ -1,8 +1,18 @@
 <?php
-// Set session lifetime to 30 days before starting session
-ini_set('session.gc_maxlifetime', 2592000); // 30 days in seconds
+// Set session lifetime to 14 days before starting session
+ini_set('session.gc_maxlifetime', 1209600); // 14 days in seconds
+ini_set('session.gc_probability', 1); // Run GC on 1% of requests
+ini_set('session.gc_divisor', 100);
+
+// Set custom session save path to prevent system cleanup
+$sessionPath = __DIR__ . '/../sessions';
+if (!is_dir($sessionPath)) {
+    mkdir($sessionPath, 0700, true);
+}
+ini_set('session.save_path', $sessionPath);
+
 session_set_cookie_params([
-    'lifetime' => 2592000, // 30 days
+    'lifetime' => 1209600, // 14 days
     'path' => '/',
     'domain' => '',
     'secure' => isset($_SERVER['HTTPS']),
@@ -46,9 +56,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_id'] = $pdo->lastInsertId();
             $_SESSION['username'] = $username;
             
-            // Set 30-day cookie
+            // Set 14-day cookie
             $params = session_get_cookie_params();
-            setcookie(session_name(), session_id(), time() + 2592000, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
+            setcookie(session_name(), session_id(), time() + 1209600, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
             
             echo json_encode(['success' => true, 'username' => $username]);
         } else {
@@ -68,9 +78,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             
-            // Extend session cookie to 30 days
+            // Extend session cookie to 14 days
             $params = session_get_cookie_params();
-            setcookie(session_name(), session_id(), time() + 2592000, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
+            setcookie(session_name(), session_id(), time() + 1209600, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
             
             echo json_encode(['success' => true, 'username' => $user['username']]);
         } else {
@@ -85,6 +95,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if ($action === 'check') {
         if (isset($_SESSION['user_id'])) {
+            // Update session last access time to prevent garbage collection
+            // This updates the session file's modification time
+            $_SESSION['last_access'] = time();
+            
+            // Refresh session cookie on each check to keep it alive
+            $params = session_get_cookie_params();
+            setcookie(session_name(), session_id(), time() + 1209600, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
+            
             echo json_encode(['logged_in' => true, 'username' => $_SESSION['username']]);
         } else {
             echo json_encode(['logged_in' => false]);
