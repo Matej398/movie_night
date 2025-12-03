@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Auth Elements
     const userDisplayNameText = document.getElementById('user-display-name-text');
-    const userDisplayNameBtn = document.getElementById('user-display-name');
+    const userDisplayName = document.getElementById('user-display-name');
     const logoutBtn = document.getElementById('logout-btn');
     const logoutBtnDesktop = document.getElementById('logout-btn-desktop');
     const mobileMenuClose = document.getElementById('mobile-menu-close');
@@ -201,32 +201,13 @@ document.addEventListener('DOMContentLoaded', () => {
         logoutBtnDesktop.addEventListener('click', handleLogout);
     }
     
-    // User Dropdown Handlers
-    const toggleUserDropdown = () => {
-        if (userDropdown) {
-            userDropdown.classList.toggle('active');
-        }
-    };
-    
+    // User Dropdown Handlers - Now using CSS hover, but keep for mobile compatibility
     const closeUserDropdown = () => {
+        // Dropdown is now controlled by CSS hover, but we can still use this for programmatic closing
         if (userDropdown) {
             userDropdown.classList.remove('active');
         }
     };
-    
-    if (userDisplayNameBtn) {
-        userDisplayNameBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            toggleUserDropdown();
-        });
-    }
-    
-    // Close dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-        if (userDropdown && !userDropdown.contains(e.target)) {
-            closeUserDropdown();
-        }
-    });
     
     // Change Password Modal Handlers
     const openChangePasswordModal = () => {

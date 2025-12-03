@@ -136,36 +136,24 @@ nav button.active {
 }
 
 .user-name-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: none;
+    border: none;
     color: var(--text-main);
-    padding: 10px 16px;
-    border-radius: var(--btn-radius);
+    padding: 0;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    display: inline-block;
     font-weight: 500;
     font-size: 0.95rem;
     transition: var(--transition);
 }
 
 .user-name-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
-}
-
-.user-name-btn svg {
-    transition: transform 0.3s ease;
-}
-
-.user-dropdown.active .user-name-btn svg {
-    transform: rotate(180deg);
+    color: var(--accent);
 }
 
 .user-dropdown-menu {
     position: absolute;
-    top: calc(100% + 8px);
+    top: calc(100% + 4px);
     right: 0;
     background: var(--card-bg);
     border: 1px solid var(--border-color);
@@ -174,7 +162,30 @@ nav button.active {
     min-width: 200px;
     z-index: 100;
     overflow: hidden;
-    animation: fadeDown 0.2s ease;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+    pointer-events: none;
+    margin-top: 4px; /* Small gap to help with hover */
+}
+
+.user-dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: transparent;
+}
+
+.user-dropdown:hover .user-dropdown-menu,
+.user-dropdown-menu:hover {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
 }
 
 @keyframes fadeDown {
