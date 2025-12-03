@@ -92,6 +92,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         session_destroy();
         echo json_encode(['success' => true]);
     }
+    elseif ($action === 'change-password') {
+        // Check if user is logged in
+        if (!isset($_SESSION['user_id'])) {
+            http_response_code(401);
+            echo json_encode(['error' => 'Unauthorized']);
+            exit;
+        }
+        
+        $currentPassword = $data['current_password'] ?? '';
+        $newPassword = $data['new_password'] ?? '';
+        $confirmPassword = $data['confirm_password'] ?? '';
+        
+        // Validate input
+        if (empty($currentPassword) || empty($newPassword) || empty($confirmPassword)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'All fields are required']);
+            exit;
+        }
+        
+        if ($newPassword !== $confirmPassword) {
+            http_response_code(400);
+            echo json_encode(['error' => 'New passwords do not match']);
+            exit;
+        }
+        
+        if (strlen($newPassword) < 6) {
+            http_response_code(400);
+            echo json_encode(['error' => 'New password must be at least 6 characters']);
+            exit;
+        }
+        
+        // Verify current password
+        $stmt = $pdo->prepare("SELECT password FROM users WHERE id = ?");
+        $stmt->execute([$_SESSION['user_id']]);
+        $user = $stmt->fetch();
+        
+        if (!$user || !password_verify($currentPassword, $user['password'])) {
+            http_response_code(401);
+            echo json_encode(['error' => 'Current password is incorrect']);
+            exit;
+        }
+        
+        // Update password
+        $newHash = password_hash($newPassword, PASSWORD_DEFAULT);
+        $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
+        
+        if ($stmt->execute([$newHash, $_SESSION['user_id']])) {
+            echo json_encode(['success' => true, 'message' => 'Password changed successfully']);
+        } else {
+            http_response_code(500);
+            echo json_encode(['error' => 'Failed to update password']);
+        }
+    }
 } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if ($action === 'check') {
         if (isset($_SESSION['user_id'])) {

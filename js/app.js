@@ -114,6 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
     const mainNav = document.getElementById('main-nav');
     const logoutBtnMobile = document.getElementById('logout-btn-mobile');
+    const changePasswordBtnMobile = document.getElementById('change-password-btn-mobile');
     const imdbSearchInput = document.getElementById('imdb-search');
     const imdbResults = document.getElementById('imdb-results');
     
@@ -137,11 +138,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalDelete = document.getElementById('modal-delete');
     
     // Auth Elements
-    const userDisplayName = document.getElementById('user-display-name');
-    const mobileUserDisplayName = document.getElementById('mobile-user-display-name');
+    const userDisplayNameText = document.getElementById('user-display-name-text');
+    const userDisplayNameBtn = document.getElementById('user-display-name');
     const logoutBtn = document.getElementById('logout-btn');
     const logoutBtnDesktop = document.getElementById('logout-btn-desktop');
     const mobileMenuClose = document.getElementById('mobile-menu-close');
+    
+    // User Dropdown Elements
+    const userDropdown = document.querySelector('.user-dropdown');
+    const userDropdownMenu = document.getElementById('user-dropdown-menu');
+    const changePasswordBtn = document.getElementById('change-password-btn');
+    
+    // Change Password Elements
+    const changePasswordModal = document.getElementById('change-password-modal');
+    const closeChangePasswordModalBtn = document.getElementById('close-change-password-modal');
+    const cancelChangePasswordBtn = document.getElementById('cancel-change-password');
+    const changePasswordForm = document.getElementById('change-password-form');
+    const changePasswordError = document.getElementById('change-password-error');
+    const submitChangePasswordBtn = document.getElementById('submit-change-password');
 
     let movies = [];
     let currentView = 'to_watch'; 
@@ -162,8 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!data.logged_in) {
                 window.location.href = 'login.html';
             } else {
-                if (userDisplayName) userDisplayName.textContent = data.username;
-                if (mobileUserDisplayName) mobileUserDisplayName.textContent = data.username;
+                if (userDisplayNameText) userDisplayNameText.textContent = data.username;
                 // Load movies only after auth check passes
                 fetchMovies();
             }
@@ -175,6 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Logout Handler
     const handleLogout = async () => {
+        closeUserDropdown(); // Close dropdown if open
         await fetch('api/auth.php?action=logout', { method: 'POST' });
         localStorage.removeItem('movies_cache'); // Clear cache on logout
         window.location.href = 'login.html';
@@ -185,6 +199,136 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (logoutBtnDesktop) {
         logoutBtnDesktop.addEventListener('click', handleLogout);
+    }
+    
+    // User Dropdown Handlers
+    const toggleUserDropdown = () => {
+        if (userDropdown) {
+            userDropdown.classList.toggle('active');
+        }
+    };
+    
+    const closeUserDropdown = () => {
+        if (userDropdown) {
+            userDropdown.classList.remove('active');
+        }
+    };
+    
+    if (userDisplayNameBtn) {
+        userDisplayNameBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleUserDropdown();
+        });
+    }
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (userDropdown && !userDropdown.contains(e.target)) {
+            closeUserDropdown();
+        }
+    });
+    
+    // Change Password Modal Handlers
+    const openChangePasswordModal = () => {
+        closeUserDropdown(); // Close dropdown when opening modal
+        if (changePasswordModal) {
+            changePasswordModal.classList.remove('hidden');
+            changePasswordForm.reset();
+            changePasswordError.style.display = 'none';
+            changePasswordError.textContent = '';
+        }
+    };
+    
+    const closeChangePasswordModal = () => {
+        if (changePasswordModal) {
+            changePasswordModal.classList.add('hidden');
+            changePasswordForm.reset();
+            changePasswordError.style.display = 'none';
+            changePasswordError.textContent = '';
+        }
+    };
+    
+    if (changePasswordBtn) {
+        changePasswordBtn.addEventListener('click', openChangePasswordModal);
+    }
+    if (closeChangePasswordModalBtn) {
+        closeChangePasswordModalBtn.addEventListener('click', closeChangePasswordModal);
+    }
+    if (cancelChangePasswordBtn) {
+        cancelChangePasswordBtn.addEventListener('click', closeChangePasswordModal);
+    }
+    if (changePasswordModal) {
+        changePasswordModal.addEventListener('click', (e) => {
+            if (e.target === changePasswordModal) {
+                closeChangePasswordModal();
+            }
+        });
+    }
+    
+    // Change Password Form Handler
+    if (changePasswordForm) {
+        changePasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            // Clear previous errors
+            changePasswordError.style.display = 'none';
+            changePasswordError.textContent = '';
+            
+            // Client-side validation
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                changePasswordError.textContent = 'All fields are required';
+                changePasswordError.style.display = 'block';
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                changePasswordError.textContent = 'New passwords do not match';
+                changePasswordError.style.display = 'block';
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                changePasswordError.textContent = 'New password must be at least 6 characters';
+                changePasswordError.style.display = 'block';
+                return;
+            }
+            
+            // Disable submit button
+            submitChangePasswordBtn.disabled = true;
+            submitChangePasswordBtn.textContent = 'Changing...';
+            
+            try {
+                const res = await fetch('api/auth.php?action=change-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        current_password: currentPassword,
+                        new_password: newPassword,
+                        confirm_password: confirmPassword
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok && data.success) {
+                    showToast('Password changed successfully', 'success');
+                    closeChangePasswordModal();
+                } else {
+                    changePasswordError.textContent = data.error || 'Failed to change password';
+                    changePasswordError.style.display = 'block';
+                }
+            } catch (err) {
+                changePasswordError.textContent = 'Connection error. Please try again.';
+                changePasswordError.style.display = 'block';
+            } finally {
+                submitChangePasswordBtn.disabled = false;
+                submitChangePasswordBtn.textContent = 'Change Password';
+            }
+        });
     }
 
     // Icons
@@ -578,6 +722,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (navWatchedMobile) {
             navWatchedMobile.addEventListener('click', () => {
                 if (navWatched) navWatched.click();
+                closeMobileMenu();
+            });
+        }
+        if (changePasswordBtnMobile) {
+            changePasswordBtnMobile.addEventListener('click', () => {
+                openChangePasswordModal();
                 closeMobileMenu();
             });
         }

@@ -128,9 +128,96 @@ nav button.active {
     display: flex;
     align-items: center;
     gap: 12px;
+    position: relative;
 }
 
-#user-display-name {
+.user-dropdown {
+    position: relative;
+}
+
+.user-name-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+    padding: 10px 16px;
+    border-radius: var(--btn-radius);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: var(--transition);
+}
+
+.user-name-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.user-name-btn svg {
+    transition: transform 0.3s ease;
+}
+
+.user-dropdown.active .user-name-btn svg {
+    transform: rotate(180deg);
+}
+
+.user-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    min-width: 200px;
+    z-index: 100;
+    overflow: hidden;
+    animation: fadeDown 0.2s ease;
+}
+
+@keyframes fadeDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-item {
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--text-main);
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.9rem;
+    transition: var(--transition);
+    text-align: left;
+}
+
+.dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.dropdown-item svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.dropdown-item span {
+    flex: 1;
+}
+
+#user-display-name-text {
     color: var(--text-main);
     font-weight: 500;
     font-size: 0.95rem;
@@ -138,30 +225,6 @@ nav button.active {
 
 #logout-btn {
     display: none; /* Hide mobile logout button on desktop */
-}
-
-#logout-btn-desktop {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--text-main);
-    padding: 10px;
-    border-radius: var(--btn-radius);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: var(--transition);
-}
-
-#logout-btn-desktop:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
-    transform: scale(1.05);
-}
-
-#logout-btn-desktop svg {
-    width: 18px;
-    height: 18px;
 }
 
 /* Hide mobile logout button in nav on desktop */
@@ -423,6 +486,18 @@ input, textarea {
     justify-content: flex-end;
     gap: 16px;
     margin-top: 30px;
+}
+
+.error-message {
+    background: rgba(255, 59, 48, 0.1);
+    border: 1px solid rgba(255, 59, 48, 0.2);
+    color: var(--danger);
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    display: none;
+    text-align: center;
 }
 
 .divider {
