@@ -6,6 +6,6 @@ RewriteEngine On
 
 # Redirect index.html to directory (removes index.html from visible URL)
 RewriteCond %{THE_REQUEST} \s[^?]*/index\.html[\s?] [NC]
-RewriteRule ^index\.html$ /projects/movie_night/ [R=301,L]
+RewriteRule ^index\.html$ / [R=301,L]
 
 
