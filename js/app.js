@@ -738,14 +738,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Mobile menu toggle
     if (mobileMenuToggle && mainNav) {
+        const toggleBodyScroll = (lock) => {
+            if (window.innerWidth <= 850) {
+                if (lock) {
+                    document.body.classList.add('mobile-menu-open');
+                } else {
+                    document.body.classList.remove('mobile-menu-open');
+                }
+            }
+        };
+        
         mobileMenuToggle.addEventListener('click', () => {
+            const isOpen = mainNav.classList.contains('mobile-open');
             mainNav.classList.toggle('mobile-open');
+            toggleBodyScroll(!isOpen);
         });
         
         // Close mobile menu when clicking nav buttons or logout
         const closeMobileMenu = () => {
             if (window.innerWidth <= 850) {
                 mainNav.classList.remove('mobile-open');
+                toggleBodyScroll(false);
             }
         };
         
@@ -781,6 +794,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 !mobileMenuToggle.contains(e.target) &&
                 mainNav.classList.contains('mobile-open')) {
                 mainNav.classList.remove('mobile-open');
+                toggleBodyScroll(false);
             }
         });
     }
