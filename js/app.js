@@ -201,13 +201,58 @@ document.addEventListener('DOMContentLoaded', () => {
         logoutBtnDesktop.addEventListener('click', handleLogout);
     }
     
-    // User Dropdown Handlers - Now using CSS hover, but keep for mobile compatibility
-    const closeUserDropdown = () => {
-        // Dropdown is now controlled by CSS hover, but we can still use this for programmatic closing
-        if (userDropdown) {
-            userDropdown.classList.remove('active');
+    // User Dropdown Handlers - Add delay for better UX
+    let dropdownHideTimeout;
+    
+    const showDropdown = () => {
+        // Clear any pending hide timeout
+        if (dropdownHideTimeout) {
+            clearTimeout(dropdownHideTimeout);
+            dropdownHideTimeout = null;
+        }
+        if (userDropdown && userDropdownMenu) {
+            userDropdownMenu.style.opacity = '1';
+            userDropdownMenu.style.visibility = 'visible';
+            userDropdownMenu.style.transform = 'translateY(0)';
+            userDropdownMenu.style.pointerEvents = 'auto';
         }
     };
+    
+    const hideDropdown = () => {
+        // Add delay before hiding to allow user to move mouse to dropdown
+        dropdownHideTimeout = setTimeout(() => {
+            if (userDropdown && userDropdownMenu) {
+                userDropdownMenu.style.opacity = '0';
+                userDropdownMenu.style.visibility = 'hidden';
+                userDropdownMenu.style.transform = 'translateY(-10px)';
+                userDropdownMenu.style.pointerEvents = 'none';
+            }
+        }, 300); // 300ms delay - gives user time to move mouse
+    };
+    
+    const closeUserDropdown = () => {
+        if (dropdownHideTimeout) {
+            clearTimeout(dropdownHideTimeout);
+            dropdownHideTimeout = null;
+        }
+        if (userDropdown && userDropdownMenu) {
+            userDropdownMenu.style.opacity = '0';
+            userDropdownMenu.style.visibility = 'hidden';
+            userDropdownMenu.style.transform = 'translateY(-10px)';
+            userDropdownMenu.style.pointerEvents = 'none';
+        }
+    };
+    
+    // Add hover event listeners for better control with delay
+    if (userDropdown) {
+        userDropdown.addEventListener('mouseenter', showDropdown);
+        userDropdown.addEventListener('mouseleave', hideDropdown);
+    }
+    
+    if (userDropdownMenu) {
+        userDropdownMenu.addEventListener('mouseenter', showDropdown);
+        userDropdownMenu.addEventListener('mouseleave', hideDropdown);
+    }
     
     // Change Password Modal Handlers
     const openChangePasswordModal = () => {

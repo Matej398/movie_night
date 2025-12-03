@@ -161,31 +161,42 @@ nav button.active {
     box-shadow: var(--shadow-lg);
     min-width: 200px;
     z-index: 100;
-    overflow: hidden;
+    overflow: visible; /* Changed to visible to allow bridge area */
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
-    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s 0.2s;
     pointer-events: none;
-    margin-top: 4px; /* Small gap to help with hover */
+    margin-top: 4px;
 }
 
+/* Invisible bridge area to help with hover - larger area */
 .user-dropdown-menu::before {
     content: '';
     position: absolute;
-    top: -4px;
-    left: 0;
-    right: 0;
-    height: 4px;
+    top: -12px;
+    left: -30px;
+    right: -30px;
+    height: 16px;
     background: transparent;
+    pointer-events: auto;
 }
 
-.user-dropdown:hover .user-dropdown-menu,
+/* Keep CSS hover as fallback, but JS will handle the delay */
+.user-dropdown:hover .user-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s;
+}
+
 .user-dropdown-menu:hover {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
     pointer-events: auto;
+    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s;
 }
 
 @keyframes fadeDown {
