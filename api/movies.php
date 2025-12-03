@@ -14,7 +14,7 @@ ini_set('session.save_path', $sessionPath);
 session_set_cookie_params([
     'lifetime' => 1209600,
     'path' => '/',
-    'domain' => '',
+    'domain' => '.codelabhaven.com', // Leading dot allows subdomain sharing
     'secure' => isset($_SERVER['HTTPS']),
     'httponly' => true,
     'samesite' => 'Lax'
