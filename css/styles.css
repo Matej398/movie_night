@@ -153,50 +153,22 @@ nav button.active {
 
 .user-dropdown-menu {
     position: absolute;
-    top: calc(100% + 4px);
+    top: calc(100% + 8px);
     right: 0;
     background: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     box-shadow: var(--shadow-lg);
     min-width: 200px;
-    z-index: 100;
-    overflow: visible; /* Changed to visible to allow bridge area */
+    z-index: 1000; /* Higher z-index to ensure it's above everything */
+    overflow: hidden;
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
-    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s 0.2s;
+    transition: opacity 0.15s ease, transform 0.15s ease;
     pointer-events: none;
-    margin-top: 4px;
-}
-
-/* Invisible bridge area to help with hover - larger area */
-.user-dropdown-menu::before {
-    content: '';
-    position: absolute;
-    top: -12px;
-    left: -30px;
-    right: -30px;
-    height: 16px;
-    background: transparent;
-    pointer-events: auto;
-}
-
-/* Keep CSS hover as fallback, but JS will handle the delay */
-.user-dropdown:hover .user-dropdown-menu {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-    pointer-events: auto;
-    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s;
-}
-
-.user-dropdown-menu:hover {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-    pointer-events: auto;
-    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s;
+    box-sizing: border-box;
+    /* Ensure full border visibility - no pseudo-elements covering it */
 }
 
 @keyframes fadeDown {

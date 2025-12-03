@@ -203,31 +203,40 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // User Dropdown Handlers - Add delay for better UX
     let dropdownHideTimeout;
+    let isDropdownVisible = false;
     
-    const showDropdown = () => {
+    const showDropdown = (e) => {
         // Clear any pending hide timeout
         if (dropdownHideTimeout) {
             clearTimeout(dropdownHideTimeout);
             dropdownHideTimeout = null;
         }
-        if (userDropdown && userDropdownMenu) {
+        if (userDropdown && userDropdownMenu && !isDropdownVisible) {
+            isDropdownVisible = true;
             userDropdownMenu.style.opacity = '1';
             userDropdownMenu.style.visibility = 'visible';
             userDropdownMenu.style.transform = 'translateY(0)';
             userDropdownMenu.style.pointerEvents = 'auto';
+            userDropdownMenu.style.transition = 'opacity 0.15s ease, transform 0.15s ease';
         }
     };
     
-    const hideDropdown = () => {
+    const hideDropdown = (e) => {
+        // Don't hide if mouse is moving to dropdown
+        if (e && e.relatedTarget && userDropdownMenu && userDropdownMenu.contains(e.relatedTarget)) {
+            return;
+        }
+        
         // Add delay before hiding to allow user to move mouse to dropdown
         dropdownHideTimeout = setTimeout(() => {
-            if (userDropdown && userDropdownMenu) {
+            if (userDropdown && userDropdownMenu && isDropdownVisible) {
+                isDropdownVisible = false;
                 userDropdownMenu.style.opacity = '0';
                 userDropdownMenu.style.visibility = 'hidden';
                 userDropdownMenu.style.transform = 'translateY(-10px)';
                 userDropdownMenu.style.pointerEvents = 'none';
             }
-        }, 300); // 300ms delay - gives user time to move mouse
+        }, 200); // 200ms delay - gives user time to move mouse
     };
     
     const closeUserDropdown = () => {
@@ -236,6 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dropdownHideTimeout = null;
         }
         if (userDropdown && userDropdownMenu) {
+            isDropdownVisible = false;
             userDropdownMenu.style.opacity = '0';
             userDropdownMenu.style.visibility = 'hidden';
             userDropdownMenu.style.transform = 'translateY(-10px)';
