@@ -36,12 +36,18 @@ body {
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     overflow-y: scroll;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+    width: 100%;
+    max-width: 100%;
 }
 
 .app-container {
     max-width: 1400px;
     margin: 0 auto;
     padding: 0 40px 40px;
+    width: 100%;
+    overflow-x: hidden; /* Prevent horizontal overflow */
+    box-sizing: border-box;
 }
 
 /* Header */
@@ -1290,6 +1296,14 @@ a.platform-badge.platform-unavailable:hover {
     
     .user-menu {
         gap: 8px;
+    }
+    
+    /* Fix dropdown menu width on mobile to prevent horizontal overflow */
+    .user-dropdown-menu {
+        min-width: auto !important;
+        max-width: calc(100vw - 40px) !important;
+        right: 20px !important;
+        left: auto !important;
     }
     
     #user-display-name {
