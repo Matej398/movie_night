@@ -17,14 +17,16 @@ $url = "https://www.imdb.com/title/{$id}/";
 $userAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1';
 $acceptLanguage = 'Accept-Language: en-US,en;q=0.9';
 
-// PERFORMANCE: -4 for IPv4, --compressed for gzip, -m 5 for timeout
+// PERFORMANCE: --compressed for gzip, -m 10 for timeout (increased from 5)
 // Force English locale with Accept-Language header
-$cmd = 'curl.exe -4 --compressed -m 5 -L -A "' . $userAgent . '" -H "' . $acceptLanguage . '" "' . $url . '"';
+// Use curl (not curl.exe) for Linux compatibility
+$cmd = 'curl --compressed -m 10 -L -A "' . $userAgent . '" -H "' . $acceptLanguage . '" "' . $url . '" 2>/dev/null';
 
 $html = shell_exec($cmd);
 
 if (!$html || strlen($html) < 500) {
-    $cmd = 'curl -L -m 5 -A "' . $userAgent . '" -H "' . $acceptLanguage . '" "' . $url . '"';
+    // Fallback: try without compressed flag
+    $cmd = 'curl -L -m 10 -A "' . $userAgent . '" -H "' . $acceptLanguage . '" "' . $url . '" 2>/dev/null';
     $html = shell_exec($cmd);
 }
 
