@@ -152,6 +152,11 @@ elseif ($method === 'PUT') {
             $params[] = json_encode($data['platforms']);
         }
 
+        if (isset($data['user_rating'])) {
+            $fields[] = "user_rating = ?";
+            $params[] = $data['user_rating'];
+        }
+
         // Add other fields if needed in future
 
         if (empty($fields)) {

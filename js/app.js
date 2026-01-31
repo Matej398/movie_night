@@ -210,6 +210,45 @@ document.addEventListener('DOMContentLoaded', () => {
         return truncated.trim() + '...';
     }
 
+    // Helper function to determine availability status
+    function getAvailabilityStatus(movie) {
+        const currentYear = new Date().getFullYear();
+        const movieYear = parseInt(movie.year) || 0;
+
+        // Future release or current year with no platforms
+        if (movieYear > currentYear) {
+            return { text: 'Coming Soon', class: 'coming-soon' };
+        }
+
+        // Current year release with no streaming platforms
+        if (movieYear === currentYear && (!movie.platforms || movie.platforms.length === 0)) {
+            return { text: 'Coming Soon', class: 'coming-soon' };
+        }
+
+        // Past release with no streaming (only show in to_watch view)
+        // Don't show for watched items since user already saw it somehow
+        if (movie.status === 'to_watch' && movieYear < currentYear && (!movie.platforms || movie.platforms.length === 0)) {
+            return { text: 'Not Streaming', class: 'not-streaming' };
+        }
+
+        return null; // Available
+    }
+
+    // Helper function to get rating badge icon SVG
+    function getRatingBadgeIcon(rating) {
+        const icons = {
+            loved: '<svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>',
+            liked: '<svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>',
+            disliked: '<svg viewBox="0 0 24 24"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>'
+        };
+        return icons[rating] || '';
+    }
+
+    // Helper to get item type label (movie or show)
+    function getTypeLabel(movie) {
+        return movie.type === 'series' ? 'show' : 'movie';
+    }
+
     // Check Authentication
     fetch('api/auth.php?action=check')
         .then(res => res.json())
@@ -413,7 +452,8 @@ document.addEventListener('DOMContentLoaded', () => {
         check: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
         undo: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>`,
         play: `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`,
-        star: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`
+        star: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`,
+        trash: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`
     };
 
     // Helper to get optimized image URL and force English locale
@@ -671,7 +711,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log('Checking platforms for:', savedMovie.title);
                     checkStreamingPlatforms(savedMovie.title, savedMovie.year, savedMovie.id);
 
-                    showToast('Movie saved!', 'success');
+                    showToast(`${movie.type === 'series' ? 'Show' : 'Movie'} saved!`, 'success');
                 }
             } else {
                 throw new Error('Server error');
@@ -1222,6 +1262,23 @@ document.addEventListener('DOMContentLoaded', () => {
             cardImage.appendChild(typeBadge);
         }
 
+        // Add availability badge (Coming Soon / Not Streaming)
+        const availabilityStatus = getAvailabilityStatus(movie);
+        if (availabilityStatus) {
+            const availBadge = document.createElement('span');
+            availBadge.className = `availability-badge ${availabilityStatus.class}`;
+            availBadge.textContent = availabilityStatus.text;
+            cardImage.appendChild(availBadge);
+        }
+
+        // Add rating badge for watched movies (only in watched view)
+        if (currentView === 'watched' && movie.user_rating) {
+            const ratingBadge = document.createElement('span');
+            ratingBadge.className = `rating-badge ${movie.user_rating}`;
+            ratingBadge.innerHTML = getRatingBadgeIcon(movie.user_rating);
+            cardImage.appendChild(ratingBadge);
+        }
+
         if (movie.image_url && movie.image_url.trim() !== '') {
             const img = document.createElement('img');
             img.alt = decodeHtmlEntities(movie.title);
@@ -1375,7 +1432,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function openDetailsModal(movie) {
-        modalTitle.textContent = decodeHtmlEntities(movie.title);
+        // Set title with optional TV badge
+        const titleText = decodeHtmlEntities(movie.title);
+        if (movie.type === 'series') {
+            modalTitle.innerHTML = `${titleText} <span class="modal-type-badge">TV Show</span>`;
+        } else {
+            modalTitle.textContent = titleText;
+        }
 
         // Force refresh platforms if empty
         if (!movie.platforms || movie.platforms.length === 0) {
@@ -1644,7 +1707,34 @@ document.addEventListener('DOMContentLoaded', () => {
             modalToggleStatus.innerHTML = icons.undo + ' Move to Library';
             modalToggleStatus.onclick = () => toggleStatus(movie.id, 'to_watch');
         }
-        modalDelete.onclick = () => deleteMovie(movie.id);
+
+        // Dynamic delete button text
+        const typeLabel = movie.type === 'series' ? 'Show' : 'Movie';
+        modalDelete.innerHTML = `${icons.trash} Delete ${typeLabel}`;
+        modalDelete.onclick = () => deleteMovie(movie.id, movie.type);
+
+        // Rating buttons - only show for watched items
+        const ratingButtonsContainer = document.getElementById('modal-rating-buttons');
+        if (ratingButtonsContainer) {
+            if (currentView === 'watched') {
+                ratingButtonsContainer.style.display = 'inline-flex';
+
+                // Update selected state based on current rating
+                const ratingBtns = ratingButtonsContainer.querySelectorAll('.rating-btn');
+                ratingBtns.forEach(btn => {
+                    const rating = btn.dataset.rating;
+                    btn.classList.toggle('selected', movie.user_rating === rating);
+                    if (rating === 'loved') {
+                        btn.classList.toggle('loved', movie.user_rating === rating);
+                    }
+
+                    // Set click handler
+                    btn.onclick = () => updateUserRating(movie.id, rating);
+                });
+            } else {
+                ratingButtonsContainer.style.display = 'none';
+            }
+        }
 
         detailsModal.classList.remove('hidden');
     }
@@ -1784,8 +1874,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    async function deleteMovie(id) {
-        const confirmed = await showConfirm('Are you sure you want to delete this movie?', 'Delete Movie');
+    async function deleteMovie(id, type = 'movie') {
+        const typeLabel = type === 'series' ? 'show' : 'movie';
+        const confirmed = await showConfirm(`Are you sure you want to delete this ${typeLabel}?`, `Delete ${typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1)}`);
         if (!confirmed) return;
 
         // Optimistic UI update
@@ -1830,7 +1921,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        showToast('Movie deleted successfully', 'success');
+        showToast(`${typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1)} deleted successfully`, 'success');
 
         // Defer genre filter update
         if (window.requestIdleCallback) {
@@ -1852,16 +1943,69 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderMovies(false);
                     updateGenreFilter();
                 }
-                showToast('Failed to delete movie', 'error');
+                showToast(`Failed to delete ${typeLabel}`, 'error');
             }
         }).catch(err => {
-            console.error('Error deleting movie:', err);
+            console.error('Error deleting:', err);
             if (movieToDelete) {
                 movies.push(movieToDelete);
                 renderMovies(false);
                 updateGenreFilter();
             }
-            showToast('Failed to delete movie', 'error');
+            showToast(`Failed to delete ${typeLabel}`, 'error');
         });
+    }
+
+    // Update user rating for a movie/show
+    async function updateUserRating(id, rating) {
+        const movie = movies.find(m => m.id === id);
+        if (!movie) return;
+
+        const oldRating = movie.user_rating;
+
+        // Toggle off if clicking same rating
+        const newRating = oldRating === rating ? null : rating;
+
+        // Optimistic update
+        movie.user_rating = newRating;
+
+        // Update rating buttons UI
+        const ratingBtns = document.querySelectorAll('#modal-rating-buttons .rating-btn');
+        ratingBtns.forEach(btn => {
+            const btnRating = btn.dataset.rating;
+            btn.classList.toggle('selected', newRating === btnRating);
+            if (btnRating === 'loved') {
+                btn.classList.toggle('loved', newRating === btnRating);
+            }
+        });
+
+        // Update cache
+        localStorage.setItem('movies_cache', JSON.stringify(movies));
+
+        // Re-render cards to update rating badges
+        renderMovies(false);
+
+        // Persist to server
+        try {
+            const res = await fetch(API_URL, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, user_rating: newRating })
+            });
+
+            if (!res.ok) {
+                throw new Error('Failed to update rating');
+            }
+
+            const ratingLabels = { loved: 'Loved it!', liked: 'Liked it', disliked: 'Not for me' };
+            if (newRating) {
+                showToast(`Rated: ${ratingLabels[newRating]}`, 'success');
+            }
+        } catch (err) {
+            console.error('Error updating rating:', err);
+            movie.user_rating = oldRating;
+            renderMovies(false);
+            showToast('Failed to save rating', 'error');
+        }
     }
 });

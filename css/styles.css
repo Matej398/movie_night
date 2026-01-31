@@ -1463,6 +1463,246 @@ a.platform-badge.platform-unavailable:hover {
     min-width: 200px;
 }
 
+/* Availability Badges (Coming Soon, Not Streaming) */
+.availability-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 149, 0, 0.9);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    z-index: 5;
+    border: 1px solid rgba(255, 149, 0, 0.5);
+}
+
+.availability-badge.coming-soon {
+    background: rgba(255, 149, 0, 0.9);
+    border-color: rgba(255, 149, 0, 0.5);
+}
+
+.availability-badge.not-streaming {
+    background: rgba(142, 142, 147, 0.9);
+    border-color: rgba(142, 142, 147, 0.5);
+}
+
+/* User Rating Badge on Cards (Watched view only) */
+.rating-badge {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.rating-badge svg {
+    width: 16px;
+    height: 16px;
+    fill: #fff;
+}
+
+.rating-badge.loved svg {
+    fill: #34c759;
+}
+
+.rating-badge.liked svg {
+    fill: #fff;
+}
+
+.rating-badge.disliked svg {
+    fill: #8e8e93;
+}
+
+/* Netflix-style Rating Buttons Container */
+.rating-buttons {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(45, 45, 48, 0.95);
+    border-radius: 24px;
+    padding: 6px 8px;
+    gap: 4px;
+}
+
+.rating-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.rating-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.rating-btn svg {
+    width: 24px;
+    height: 24px;
+    stroke: #fff;
+    fill: none;
+    stroke-width: 2;
+    transition: all 0.2s ease;
+}
+
+/* Filled state when selected */
+.rating-btn.selected svg {
+    fill: #fff;
+    stroke: #fff;
+}
+
+.rating-btn.selected.loved svg {
+    fill: #34c759;
+    stroke: #34c759;
+}
+
+/* Tooltip for rating buttons */
+.rating-btn::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    color: #000;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    margin-bottom: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.rating-btn::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #fff;
+    margin-bottom: -4px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+}
+
+.rating-btn:hover::before,
+.rating-btn:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Modal Type Badge (next to title) */
+.modal-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(135deg, rgba(156, 39, 176, 0.9), rgba(103, 58, 183, 0.9));
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 12px;
+    vertical-align: middle;
+}
+
+/* Icon-only action buttons with tooltips */
+.btn-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.btn-icon:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.btn-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: #fff;
+}
+
+.btn-icon.danger:hover {
+    background: rgba(255, 59, 48, 0.2);
+    border-color: rgba(255, 59, 48, 0.5);
+}
+
+.btn-icon.danger:hover svg {
+    stroke: #ff3b30;
+}
+
+.btn-icon.success:hover {
+    background: rgba(52, 199, 89, 0.2);
+    border-color: rgba(52, 199, 89, 0.5);
+}
+
+.btn-icon.success:hover svg {
+    stroke: #34c759;
+}
+
+/* Tooltip for icon buttons */
+.btn-icon[title]::before {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    color: #000;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    margin-bottom: 8px;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn-icon[title]:hover::before {
+    opacity: 1;
+    visibility: visible;
+}
+
 /* Toast Notifications */
 #toast-container {
     position: fixed;
