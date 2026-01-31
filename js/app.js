@@ -1700,17 +1700,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // JustWatch Button logic removed
 
+        // Icon-only action buttons with tooltips
         if (currentView === 'to_watch') {
-            modalToggleStatus.innerHTML = icons.check + ' Mark as Watched';
+            modalToggleStatus.innerHTML = icons.check;
+            modalToggleStatus.title = 'Mark as Watched';
             modalToggleStatus.onclick = () => toggleStatus(movie.id, 'watched');
         } else {
-            modalToggleStatus.innerHTML = icons.undo + ' Move to Library';
+            modalToggleStatus.innerHTML = icons.undo;
+            modalToggleStatus.title = 'Move to Library';
             modalToggleStatus.onclick = () => toggleStatus(movie.id, 'to_watch');
         }
 
-        // Dynamic delete button text
-        const typeLabel = movie.type === 'series' ? 'Show' : 'Movie';
-        modalDelete.innerHTML = `${icons.trash} Delete ${typeLabel}`;
+        // Delete button (icon only)
+        modalDelete.innerHTML = icons.trash;
+        modalDelete.title = `Delete ${movie.type === 'series' ? 'Show' : 'Movie'}`;
         modalDelete.onclick = () => deleteMovie(movie.id, movie.type);
 
         // Rating container - only show for watched items
@@ -1719,42 +1722,66 @@ document.addEventListener('DOMContentLoaded', () => {
         const ratingButtonsContainer = document.getElementById('modal-rating-buttons');
 
         if (ratingContainer) {
+            // Remove previous event listeners by cloning
+            const newContainer = ratingContainer.cloneNode(true);
+            ratingContainer.parentNode.replaceChild(newContainer, ratingContainer);
+
+            const freshTrigger = newContainer.querySelector('.rating-trigger');
+            const freshButtons = newContainer.querySelector('.rating-buttons');
+
             if (currentView === 'watched') {
-                ratingContainer.style.display = 'inline-flex';
+                newContainer.style.display = 'inline-flex';
+                newContainer.classList.remove('expanded');
 
                 // Update trigger button to show current rating state
-                if (ratingTrigger) {
-                    ratingTrigger.classList.remove('has-rating', 'rating-loved', 'rating-liked', 'rating-disliked');
+                if (freshTrigger) {
+                    freshTrigger.classList.remove('has-rating', 'rating-loved', 'rating-liked', 'rating-disliked');
                     if (movie.user_rating) {
-                        ratingTrigger.classList.add('has-rating', `rating-${movie.user_rating}`);
+                        freshTrigger.classList.add('has-rating', `rating-${movie.user_rating}`);
 
                         // Update trigger icon based on rating
                         if (movie.user_rating === 'loved') {
-                            ratingTrigger.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+                            freshTrigger.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
                         } else if (movie.user_rating === 'disliked') {
-                            ratingTrigger.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>`;
+                            freshTrigger.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>`;
                         } else {
-                            ratingTrigger.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>`;
+                            freshTrigger.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>`;
                         }
                     } else {
                         // Default thumbs up icon (outline)
-                        ratingTrigger.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>`;
+                        freshTrigger.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>`;
                     }
+
+                    // Expand on trigger click
+                    freshTrigger.onclick = (e) => {
+                        e.stopPropagation();
+                        newContainer.classList.add('expanded');
+                    };
                 }
 
+                // Collapse when leaving the expanded area
+                newContainer.onmouseleave = () => {
+                    newContainer.classList.remove('expanded');
+                };
+
                 // Update selected state in expanded buttons
-                if (ratingButtonsContainer) {
-                    const ratingBtns = ratingButtonsContainer.querySelectorAll('.rating-btn');
+                if (freshButtons) {
+                    const ratingBtns = freshButtons.querySelectorAll('.rating-btn');
                     ratingBtns.forEach(btn => {
                         const rating = btn.dataset.rating;
                         btn.classList.toggle('selected', movie.user_rating === rating);
 
-                        // Set click handler
-                        btn.onclick = () => updateUserRating(movie.id, rating);
+                        // Set click handler with immediate feedback
+                        btn.onclick = (e) => {
+                            e.stopPropagation();
+                            updateUserRating(movie.id, rating);
+                            // Collapse after selection
+                            newContainer.classList.remove('expanded');
+                        };
                     });
                 }
             } else {
-                ratingContainer.style.display = 'none';
+                newContainer.style.display = 'none';
             }
         }
 
@@ -1991,15 +2018,33 @@ document.addEventListener('DOMContentLoaded', () => {
         // Optimistic update
         movie.user_rating = newRating;
 
-        // Update rating buttons UI
-        const ratingBtns = document.querySelectorAll('#modal-rating-buttons .rating-btn');
+        // Update rating buttons UI (expanded buttons)
+        const ratingBtns = document.querySelectorAll('.rating-buttons .rating-btn');
         ratingBtns.forEach(btn => {
             const btnRating = btn.dataset.rating;
             btn.classList.toggle('selected', newRating === btnRating);
-            if (btnRating === 'loved') {
-                btn.classList.toggle('loved', newRating === btnRating);
-            }
         });
+
+        // Update trigger button immediately
+        const freshTrigger = document.querySelector('.rating-trigger');
+        if (freshTrigger) {
+            freshTrigger.classList.remove('has-rating', 'rating-loved', 'rating-liked', 'rating-disliked');
+            if (newRating) {
+                freshTrigger.classList.add('has-rating', `rating-${newRating}`);
+
+                // Update trigger icon based on rating
+                if (newRating === 'loved') {
+                    freshTrigger.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+                } else if (newRating === 'disliked') {
+                    freshTrigger.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>`;
+                } else {
+                    freshTrigger.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>`;
+                }
+            } else {
+                // Reset to outline icon
+                freshTrigger.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>`;
+            }
+        }
 
         // Update cache
         localStorage.setItem('movies_cache', JSON.stringify(movies));
