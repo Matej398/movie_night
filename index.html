@@ -229,30 +229,40 @@
                             </svg>
                             Watch Trailer
                         </button>
-                        <!-- Netflix-style Rating Buttons (hidden for to_watch, shown for watched) -->
-                        <div id="modal-rating-buttons" class="rating-buttons" style="display: none;">
-                            <button class="rating-btn" data-rating="disliked" data-tooltip="Not for me" title="">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <path
-                                        d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17" />
-                                </svg>
-                            </button>
-                            <button class="rating-btn" data-rating="liked" data-tooltip="I like this" title="">
+                        <!-- Netflix-style Expandable Rating (hidden for to_watch, shown for watched) -->
+                        <div id="modal-rating-container" class="rating-container" style="display: none;">
+                            <!-- Trigger button (shows initially - thumbs up) -->
+                            <button class="rating-trigger" id="rating-trigger">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                     stroke-linecap="round" stroke-linejoin="round">
                                     <path
                                         d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
                                 </svg>
                             </button>
-                            <button class="rating-btn" data-rating="loved" data-tooltip="Love this!" title="">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <path
-                                        d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
-                                    <path d="M18 9V5a3 3 0 0 0-3-3" transform="translate(4, 0)" />
-                                </svg>
-                            </button>
+                            <!-- Expanded options (shown on hover) -->
+                            <div class="rating-buttons" id="modal-rating-buttons">
+                                <button class="rating-btn" data-rating="disliked" data-tooltip="Not for me">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path
+                                            d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17" />
+                                    </svg>
+                                </button>
+                                <button class="rating-btn" data-rating="liked" data-tooltip="I like this">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path
+                                            d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+                                    </svg>
+                                </button>
+                                <button class="rating-btn" data-rating="loved" data-tooltip="Love it!">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path
+                                            d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                         <div class="modal-status-actions">
                             <button id="modal-toggle-status" class="btn-action">

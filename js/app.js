@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Helper function to get rating badge icon SVG
     function getRatingBadgeIcon(rating) {
         const icons = {
-            loved: '<svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>',
+            loved: '<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
             liked: '<svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>',
             disliked: '<svg viewBox="0 0 24 24"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>'
         };
@@ -1713,26 +1713,48 @@ document.addEventListener('DOMContentLoaded', () => {
         modalDelete.innerHTML = `${icons.trash} Delete ${typeLabel}`;
         modalDelete.onclick = () => deleteMovie(movie.id, movie.type);
 
-        // Rating buttons - only show for watched items
+        // Rating container - only show for watched items
+        const ratingContainer = document.getElementById('modal-rating-container');
+        const ratingTrigger = document.getElementById('rating-trigger');
         const ratingButtonsContainer = document.getElementById('modal-rating-buttons');
-        if (ratingButtonsContainer) {
+
+        if (ratingContainer) {
             if (currentView === 'watched') {
-                ratingButtonsContainer.style.display = 'inline-flex';
+                ratingContainer.style.display = 'inline-flex';
 
-                // Update selected state based on current rating
-                const ratingBtns = ratingButtonsContainer.querySelectorAll('.rating-btn');
-                ratingBtns.forEach(btn => {
-                    const rating = btn.dataset.rating;
-                    btn.classList.toggle('selected', movie.user_rating === rating);
-                    if (rating === 'loved') {
-                        btn.classList.toggle('loved', movie.user_rating === rating);
+                // Update trigger button to show current rating state
+                if (ratingTrigger) {
+                    ratingTrigger.classList.remove('has-rating', 'rating-loved', 'rating-liked', 'rating-disliked');
+                    if (movie.user_rating) {
+                        ratingTrigger.classList.add('has-rating', `rating-${movie.user_rating}`);
+
+                        // Update trigger icon based on rating
+                        if (movie.user_rating === 'loved') {
+                            ratingTrigger.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+                        } else if (movie.user_rating === 'disliked') {
+                            ratingTrigger.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>`;
+                        } else {
+                            ratingTrigger.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>`;
+                        }
+                    } else {
+                        // Default thumbs up icon (outline)
+                        ratingTrigger.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>`;
                     }
+                }
 
-                    // Set click handler
-                    btn.onclick = () => updateUserRating(movie.id, rating);
-                });
+                // Update selected state in expanded buttons
+                if (ratingButtonsContainer) {
+                    const ratingBtns = ratingButtonsContainer.querySelectorAll('.rating-btn');
+                    ratingBtns.forEach(btn => {
+                        const rating = btn.dataset.rating;
+                        btn.classList.toggle('selected', movie.user_rating === rating);
+
+                        // Set click handler
+                        btn.onclick = () => updateUserRating(movie.id, rating);
+                    });
+                }
             } else {
-                ratingButtonsContainer.style.display = 'none';
+                ratingContainer.style.display = 'none';
             }
         }
 

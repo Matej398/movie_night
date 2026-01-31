@@ -1515,7 +1515,7 @@ a.platform-badge.platform-unavailable:hover {
 }
 
 .rating-badge.loved svg {
-    fill: #34c759;
+    fill: #ff375f;
 }
 
 .rating-badge.liked svg {
@@ -1526,19 +1526,87 @@ a.platform-badge.platform-unavailable:hover {
     fill: #8e8e93;
 }
 
-/* Netflix-style Rating Buttons Container */
-.rating-buttons {
+/* Netflix-style Expandable Rating Container */
+.rating-container {
     display: inline-flex;
     align-items: center;
-    background: rgba(45, 45, 48, 0.95);
+    position: relative;
+}
+
+/* The outer button that shows by default (circular with thumbs up) */
+.rating-trigger {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 2;
+}
+
+.rating-trigger:hover {
+    border-color: rgba(255, 255, 255, 0.7);
+}
+
+.rating-trigger svg {
+    width: 22px;
+    height: 22px;
+    stroke: rgba(255, 255, 255, 0.8);
+    fill: none;
+    stroke-width: 2;
+}
+
+/* When a rating is selected, show filled icon */
+.rating-trigger.has-rating svg {
+    fill: #fff;
+    stroke: #fff;
+}
+
+.rating-trigger.rating-loved svg {
+    fill: #ff375f;
+    stroke: #ff375f;
+}
+
+/* The expandable pill that appears on hover */
+.rating-buttons {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: flex;
+    align-items: center;
+    background: rgba(35, 35, 38, 0.98);
     border-radius: 24px;
-    padding: 6px 8px;
-    gap: 4px;
+    padding: 4px;
+    gap: 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.9);
+    transform-origin: left center;
+    transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+    z-index: 10;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Show expanded buttons on container hover */
+.rating-container:hover .rating-buttons {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+}
+
+/* Hide trigger when expanded */
+.rating-container:hover .rating-trigger {
+    opacity: 0;
 }
 
 .rating-btn {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     background: transparent;
     border: none;
@@ -1551,13 +1619,13 @@ a.platform-badge.platform-unavailable:hover {
 }
 
 .rating-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.12);
 }
 
 .rating-btn svg {
     width: 24px;
     height: 24px;
-    stroke: #fff;
+    stroke: rgba(255, 255, 255, 0.85);
     fill: none;
     stroke-width: 2;
     transition: all 0.2s ease;
@@ -1569,9 +1637,9 @@ a.platform-badge.platform-unavailable:hover {
     stroke: #fff;
 }
 
-.rating-btn.selected.loved svg {
-    fill: #34c759;
-    stroke: #34c759;
+.rating-btn.selected[data-rating="loved"] svg {
+    fill: #ff375f;
+    stroke: #ff375f;
 }
 
 /* Tooltip for rating buttons */
@@ -1593,6 +1661,7 @@ a.platform-badge.platform-unavailable:hover {
     transition: all 0.2s ease;
     margin-bottom: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
 }
 
 .rating-btn::after {
@@ -1607,6 +1676,7 @@ a.platform-badge.platform-unavailable:hover {
     opacity: 0;
     visibility: hidden;
     transition: all 0.2s ease;
+    pointer-events: none;
 }
 
 .rating-btn:hover::before,
