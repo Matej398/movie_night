@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentYear = new Date().getFullYear();
         const movieYear = parseInt(movie.year) || 0;
 
-        // Future release or current year with no platforms
+        // Future release
         if (movieYear > currentYear) {
             return { text: 'Coming Soon', class: 'coming-soon' };
         }
@@ -223,12 +223,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Current year release with no streaming platforms
         if (movieYear === currentYear && (!movie.platforms || movie.platforms.length === 0)) {
             return { text: 'Coming Soon', class: 'coming-soon' };
-        }
-
-        // Past release with no streaming (only show in to_watch view)
-        // Don't show for watched items since user already saw it somehow
-        if (movie.status === 'to_watch' && movieYear < currentYear && (!movie.platforms || movie.platforms.length === 0)) {
-            return { text: 'Not Streaming', class: 'not-streaming' };
         }
 
         return null; // Available

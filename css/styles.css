@@ -12,7 +12,7 @@
     --modal-overlay: rgba(0, 0, 0, 0.4);
     --modal-bg: rgba(28, 28, 30, 0.85);
     --radius: 18px;
-    --btn-radius: 980px;
+    --btn-radius: 12px;
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.12);
     --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.24);
     --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.4);
@@ -713,6 +713,14 @@ textarea {
     display: flex;
     flex-direction: column;
     gap: 16px;
+}
+
+/* Single row for all modal action buttons */
+.modal-actions-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
 .btn-trailer {

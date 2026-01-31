@@ -222,7 +222,7 @@
                         <!-- Platform badges populated by JS -->
                     </div>
                     <p id="modal-desc">Description goes here...</p>
-                    <div class="modal-actions">
+                    <div class="modal-actions-row">
                         <button id="modal-trailer" class="btn-trailer">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none">
                                 <polygon points="5 3 19 12 5 21 5 3"></polygon>
@@ -239,7 +239,7 @@
                                         d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
                                 </svg>
                             </button>
-                            <!-- Expanded options (shown on hover) -->
+                            <!-- Expanded options (shown on click) -->
                             <div class="rating-buttons" id="modal-rating-buttons">
                                 <button class="rating-btn" data-rating="disliked" data-tooltip="Not for me">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -264,23 +264,21 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="modal-action-buttons">
-                            <button id="modal-toggle-status" class="btn-icon success" title="Mark as Watched">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                </svg>
-                            </button>
-                            <button id="modal-delete" class="btn-icon danger" title="Delete">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                    <path
-                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                                    </path>
-                                </svg>
-                            </button>
-                        </div>
+                        <button id="modal-toggle-status" class="btn-icon success" title="Mark as Watched">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </button>
+                        <button id="modal-delete" class="btn-icon danger" title="Delete">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path
+                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                </path>
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </div>
