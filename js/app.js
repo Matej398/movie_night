@@ -656,7 +656,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Optimistic UI Update START ---
         // 1. Close modal immediately
         closeAddModal();
-        showToast('Adding movie...', 'info', 2000);
+        const typeLabel = movie.type === 'series' ? 'show' : 'movie';
+        showToast(`Adding ${typeLabel}...`, 'info', 2000);
 
         // 2. Add to local list immediately
         movies.unshift(optimisticMovie);
@@ -705,7 +706,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log('Checking platforms for:', savedMovie.title);
                     checkStreamingPlatforms(savedMovie.title, savedMovie.year, savedMovie.id);
 
-                    showToast(`${movie.type === 'series' ? 'Show' : 'Movie'} saved!`, 'success');
+                    showToast(`${savedMovie.type === 'series' ? 'Show' : 'Movie'} saved!`, 'success');
                 }
             } else {
                 throw new Error('Server error');
@@ -715,7 +716,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Revert UI
             movies = movies.filter(m => m.id !== tempId);
             renderMovies(false);
-            showToast('Failed to add movie. Please try again.', 'error');
+            showToast(`Failed to add ${typeLabel}. Please try again.`, 'error');
             // Re-open modal with data? Maybe too intrusive.
         }
     });
