@@ -53,12 +53,14 @@ if ($omdbResponse) {
 
     if ($omdbData && isset($omdbData['Title']) && (!isset($omdbData['Response']) || $omdbData['Response'] !== 'False')) {
         // Successfully got data from OMDb
-        $title = $omdbData['Title'] ?? '';
+        $title = html_entity_decode($omdbData['Title'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $year = $omdbData['Year'] ?? '';
         $genre = $omdbData['Genre'] ?? '';
-        $description = $omdbData['Plot'] ?? '';
+        $description = html_entity_decode($omdbData['Plot'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $rating = $omdbData['imdbRating'] ?? '';
         $image = $omdbData['Poster'] ?? '';
+        $type = $omdbData['Type'] ?? 'movie'; // movie, series, episode
+        $totalSeasons = $omdbData['totalSeasons'] ?? null;
 
         // Fix image URL - use higher quality if available
         if ($image && $image !== 'N/A') {
@@ -70,7 +72,7 @@ if ($omdbResponse) {
         // Generate trailer search URL
         $trailer = "https://www.youtube.com/results?search_query=" . urlencode($title . " " . $year . " trailer");
 
-        echo json_encode([
+        $response = [
             'title' => $title,
             'image_url' => $image,
             'description' => $description,
@@ -78,8 +80,16 @@ if ($omdbResponse) {
             'year' => $year,
             'rating' => $rating,
             'trailer_url' => $trailer,
+            'type' => $type,
             'source' => 'omdb'
-        ]);
+        ];
+
+        // Add totalSeasons only for series
+        if ($type === 'series' && $totalSeasons) {
+            $response['totalSeasons'] = $totalSeasons;
+        }
+
+        echo json_encode($response);
         exit;
     }
 }
@@ -140,7 +150,7 @@ if (!$jsonLd) {
 }
 
 // Extract fields from JSON-LD
-$title = $jsonLd['name'] ?? '';
+$title = html_entity_decode($jsonLd['name'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
 $image = $jsonLd['image'] ?? '';
 if ($image) {
     $image = preg_replace('/https?:\/\/[^\/]+\.media-amazon\.com/', 'https://m.media-amazon.com', $image);
@@ -149,10 +159,21 @@ if ($image) {
         $image = 'https://m.media-amazon.com' . $basePath . '/_V1_QL75_UX600_CR0,0,600,900_AL_.jpg';
     }
 }
-$description = $jsonLd['description'] ?? '';
+$description = html_entity_decode($jsonLd['description'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
 $genre = '';
 if (isset($jsonLd['genre'])) {
     $genre = is_array($jsonLd['genre']) ? implode(', ', $jsonLd['genre']) : $jsonLd['genre'];
+}
+
+// Detect type from JSON-LD
+$type = 'movie';
+if (isset($jsonLd['@type'])) {
+    $ldType = $jsonLd['@type'];
+    if ($ldType === 'TVSeries' || $ldType === 'TVShow') {
+        $type = 'series';
+    } elseif ($ldType === 'TVEpisode') {
+        $type = 'episode';
+    }
 }
 
 $year = '';
@@ -165,11 +186,12 @@ $trailer = "https://www.youtube.com/results?search_query=" . urlencode($title . 
 echo json_encode([
     'title' => $title,
     'image_url' => $image,
-    'description' => html_entity_decode($description),
+    'description' => $description,
     'genre' => $genre,
     'year' => $year,
     'rating' => $rating,
     'trailer_url' => $trailer,
+    'type' => $type,
     'source' => 'imdb_scrape'
 ]);
 ?>

@@ -8,17 +8,17 @@ const STREAMING_CHECK_URL = 'api/streaming_check.php';
 function showToast(message, type = 'info', duration = 3000) {
     const container = document.getElementById('toast-container');
     if (!container) return;
-    
+
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    
+
     const icons = {
         error: `<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`,
         success: `<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
         warning: `<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`,
         info: `<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`
     };
-    
+
     toast.innerHTML = `
         ${icons[type] || icons.info}
         <span class="toast-message">${message}</span>
@@ -29,12 +29,12 @@ function showToast(message, type = 'info', duration = 3000) {
             </svg>
         </button>
     `;
-    
+
     container.appendChild(toast);
-    
+
     // Trigger animation
     setTimeout(() => toast.classList.add('show'), 10);
-    
+
     // Auto remove
     setTimeout(() => {
         toast.classList.remove('show');
@@ -50,16 +50,16 @@ function showConfirm(message, title = 'Confirm') {
         const messageEl = document.getElementById('confirm-message');
         const okBtn = document.getElementById('confirm-ok');
         const cancelBtn = document.getElementById('confirm-cancel');
-        
+
         if (!modal) {
             resolve(false);
             return;
         }
-        
+
         titleEl.textContent = title;
         messageEl.textContent = message;
         modal.classList.remove('hidden');
-        
+
         const cleanup = () => {
             // Defer DOM updates to avoid blocking
             requestAnimationFrame(() => {
@@ -69,21 +69,21 @@ function showConfirm(message, title = 'Confirm') {
                 modal.onclick = null;
             });
         };
-        
+
         okBtn.onclick = () => {
             // Resolve immediately for instant response
             resolve(true);
             // Cleanup in next frame (non-blocking)
             cleanup();
         };
-        
+
         cancelBtn.onclick = () => {
             // Resolve immediately for instant response
             resolve(false);
             // Cleanup in next frame (non-blocking)
             cleanup();
         };
-        
+
         modal.onclick = (e) => {
             if (e.target === modal) {
                 // Resolve immediately for instant response
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelAddBtn = document.getElementById('cancel-add');
     const addModal = document.getElementById('add-movie-modal');
     const manualEntryToggle = document.getElementById('manual-entry-toggle'); // New
-    
+
     const searchInput = document.getElementById('search-input');
     const genreFilter = document.getElementById('genre-filter');
     const navLibrary = document.getElementById('nav-library');
@@ -117,10 +117,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const changePasswordBtnMobile = document.getElementById('change-password-btn-mobile');
     const imdbSearchInput = document.getElementById('imdb-search');
     const imdbResults = document.getElementById('imdb-results');
-    
+
     const detailsModal = document.getElementById('movie-modal');
     const closeDetailsModalBtn = document.getElementById('close-details-modal');
-    
+
     // Trailer Modal Refs
     const trailerModal = document.getElementById('trailer-modal');
     const closeTrailerModalBtn = document.getElementById('close-trailer-modal');
@@ -136,19 +136,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // const modalJustWatch = document.getElementById('modal-justwatch'); // Removed
     const modalToggleStatus = document.getElementById('modal-toggle-status');
     const modalDelete = document.getElementById('modal-delete');
-    
+
     // Auth Elements
     const userDisplayNameText = document.getElementById('user-display-name-text');
     const userDisplayName = document.getElementById('user-display-name');
     const logoutBtn = document.getElementById('logout-btn');
     const logoutBtnDesktop = document.getElementById('logout-btn-desktop');
     const mobileMenuClose = document.getElementById('mobile-menu-close');
-    
+
     // User Dropdown Elements
     const userDropdown = document.querySelector('.user-dropdown');
     const userDropdownMenu = document.getElementById('user-dropdown-menu');
     const changePasswordBtn = document.getElementById('change-password-btn');
-    
+
     // Change Password Elements
     const changePasswordModal = document.getElementById('change-password-modal');
     const closeChangePasswordModalBtn = document.getElementById('close-change-password-modal');
@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const submitChangePasswordBtn = document.getElementById('submit-change-password');
 
     let movies = [];
-    let currentView = 'to_watch'; 
+    let currentView = 'to_watch';
     let searchDebounceTimeout;
 
     // Helper function to decode HTML entities
@@ -167,6 +167,47 @@ document.addEventListener('DOMContentLoaded', () => {
         const textarea = document.createElement('textarea');
         textarea.innerHTML = text;
         return textarea.value;
+    }
+
+    // Helper function to truncate description to max lines, ending at sentence boundaries
+    function truncateDescription(text, maxLines = 5) {
+        if (!text) return text;
+
+        // Approximate chars per line (based on modal width and font size)
+        const charsPerLine = 85;
+        const maxChars = charsPerLine * maxLines;
+
+        // If text is short enough, return as-is
+        if (text.length <= maxChars) return text;
+
+        // Find sentence boundaries (., !, ?)
+        const sentenceEndRegex = /[.!?]\s+/g;
+        let lastSentenceEnd = 0;
+        let match;
+
+        while ((match = sentenceEndRegex.exec(text)) !== null) {
+            const endPos = match.index + 1; // Include the punctuation
+            if (endPos <= maxChars) {
+                lastSentenceEnd = endPos;
+            } else {
+                break;
+            }
+        }
+
+        // If we found a sentence boundary, use it
+        if (lastSentenceEnd > 0) {
+            return text.substring(0, lastSentenceEnd).trim();
+        }
+
+        // No sentence boundary found within limit, try to end at a word boundary
+        const truncated = text.substring(0, maxChars);
+        const lastSpace = truncated.lastIndexOf(' ');
+        if (lastSpace > maxChars * 0.7) {
+            return truncated.substring(0, lastSpace).trim() + '...';
+        }
+
+        // Fallback: hard truncate
+        return truncated.trim() + '...';
     }
 
     // Check Authentication
@@ -183,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch(() => {
             // If auth check fails entirely (network error), redirect to login
-             window.location.href = 'login.html';
+            window.location.href = 'login.html';
         });
 
     // Logout Handler
@@ -193,18 +234,18 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('movies_cache'); // Clear cache on logout
         window.location.href = 'login.html';
     };
-    
+
     if (logoutBtn) {
         logoutBtn.addEventListener('click', handleLogout);
     }
     if (logoutBtnDesktop) {
         logoutBtnDesktop.addEventListener('click', handleLogout);
     }
-    
+
     // User Dropdown Handlers - Add delay for better UX
     let dropdownHideTimeout;
     let isDropdownVisible = false;
-    
+
     const showDropdown = (e) => {
         // Clear any pending hide timeout
         if (dropdownHideTimeout) {
@@ -220,13 +261,13 @@ document.addEventListener('DOMContentLoaded', () => {
             userDropdownMenu.style.transition = 'opacity 0.15s ease, transform 0.15s ease';
         }
     };
-    
+
     const hideDropdown = (e) => {
         // Don't hide if mouse is moving to dropdown
         if (e && e.relatedTarget && userDropdownMenu && userDropdownMenu.contains(e.relatedTarget)) {
             return;
         }
-        
+
         // Add delay before hiding to allow user to move mouse to dropdown
         dropdownHideTimeout = setTimeout(() => {
             if (userDropdown && userDropdownMenu && isDropdownVisible) {
@@ -238,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, 200); // 200ms delay - gives user time to move mouse
     };
-    
+
     const closeUserDropdown = () => {
         if (dropdownHideTimeout) {
             clearTimeout(dropdownHideTimeout);
@@ -252,18 +293,18 @@ document.addEventListener('DOMContentLoaded', () => {
             userDropdownMenu.style.pointerEvents = 'none';
         }
     };
-    
+
     // Add hover event listeners for better control with delay
     if (userDropdown) {
         userDropdown.addEventListener('mouseenter', showDropdown);
         userDropdown.addEventListener('mouseleave', hideDropdown);
     }
-    
+
     if (userDropdownMenu) {
         userDropdownMenu.addEventListener('mouseenter', showDropdown);
         userDropdownMenu.addEventListener('mouseleave', hideDropdown);
     }
-    
+
     // Change Password Modal Handlers
     const openChangePasswordModal = () => {
         closeUserDropdown(); // Close dropdown when opening modal
@@ -274,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
             changePasswordError.textContent = '';
         }
     };
-    
+
     const closeChangePasswordModal = () => {
         if (changePasswordModal) {
             changePasswordModal.classList.add('hidden');
@@ -283,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
             changePasswordError.textContent = '';
         }
     };
-    
+
     if (changePasswordBtn) {
         changePasswordBtn.addEventListener('click', openChangePasswordModal);
     }
@@ -300,43 +341,43 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    
+
     // Change Password Form Handler
     if (changePasswordForm) {
         changePasswordForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const currentPassword = document.getElementById('current-password').value;
             const newPassword = document.getElementById('new-password').value;
             const confirmPassword = document.getElementById('confirm-password').value;
-            
+
             // Clear previous errors
             changePasswordError.style.display = 'none';
             changePasswordError.textContent = '';
-            
+
             // Client-side validation
             if (!currentPassword || !newPassword || !confirmPassword) {
                 changePasswordError.textContent = 'All fields are required';
                 changePasswordError.style.display = 'block';
                 return;
             }
-            
+
             if (newPassword !== confirmPassword) {
                 changePasswordError.textContent = 'New passwords do not match';
                 changePasswordError.style.display = 'block';
                 return;
             }
-            
+
             if (newPassword.length < 6) {
                 changePasswordError.textContent = 'New password must be at least 6 characters';
                 changePasswordError.style.display = 'block';
                 return;
             }
-            
+
             // Disable submit button
             submitChangePasswordBtn.disabled = true;
             submitChangePasswordBtn.textContent = 'Changing...';
-            
+
             try {
                 const res = await fetch('api/auth.php?action=change-password', {
                     method: 'POST',
@@ -347,9 +388,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         confirm_password: confirmPassword
                     })
                 });
-                
+
                 const data = await res.json();
-                
+
                 if (res.ok && data.success) {
                     showToast('Password changed successfully', 'success');
                     closeChangePasswordModal();
@@ -378,25 +419,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // Helper to get optimized image URL and force English locale
     function getOptimizedImageUrl(url, width = 600) {
         if (!url) return url;
-        
+
         // If it's not an Amazon/IMDb image, return as-is
         if (!url.includes('media-amazon.com')) return url;
-        
+
         try {
             // Force US CDN first
             url = url.replace(/https?:\/\/[^\/]+\.media-amazon\.com/i, 'https://m.media-amazon.com');
-            
+
             // Parse URL
             const urlObj = new URL(url);
             let pathname = urlObj.pathname;
-            
+
             // Remove any existing query parameters
             url = url.split('?')[0];
-            
+
             // Extract base path - IMDb URLs have pattern: /images/M/[path]/_V1_[params].jpg
             // We need everything before _V1_
             let basePath = '';
-            
+
             // Try multiple patterns to extract base path
             if (pathname.includes('_V1_')) {
                 // Split at _V1_ and take everything before it
@@ -415,20 +456,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Last resort: remove filename
                 basePath = pathname.replace(/\/[^\/]*\.jpg$/i, '');
             }
-            
+
             // Ensure basePath starts with /
             if (!basePath.startsWith('/')) {
                 basePath = '/' + basePath;
             }
-            
+
             // Calculate height for poster aspect ratio (2:3)
             const height = Math.round(width * 1.5);
-            
+
             // Force US CDN and rebuild URL with English locale parameters
             // AL_ = English locale (American), QL75 = quality 75%, UX = width, CR = crop
             // Using AL_ ensures we get English/American posters, not German ones
             const englishUrl = `https://m.media-amazon.com${basePath}/_V1_QL75_UX${width}_CR0,0,${width},${height}_AL_.jpg`;
-            
+
             return englishUrl;
         } catch (e) {
             // If URL parsing fails, try aggressive replacement
@@ -454,12 +495,12 @@ document.addEventListener('DOMContentLoaded', () => {
         imdbSearchInput.value = '';
         imdbSearchInput.focus();
     }
-    
+
     function closeAddModal() {
         addModal.classList.add('hidden');
         addForm.reset();
         imdbSearchInput.value = '';
-        document.getElementById('rating').value = ''; 
+        document.getElementById('rating').value = '';
         imdbResults.classList.add('hidden');
     }
 
@@ -482,7 +523,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Automatically open YouTube search in a new tab
         const query = encodeURIComponent(title + ' trailer');
         const youtubeUrl = `https://www.youtube.com/results?search_query=${query}`;
-        
+
         // Open directly in new tab
         window.open(youtubeUrl, '_blank');
     }
@@ -540,21 +581,24 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const title = document.getElementById('title').value.trim();
         const year = document.getElementById('year').value.trim();
-        
+
         // Check for duplicates
         const isDuplicate = movies.some(movie => {
             const titleMatch = movie.title.toLowerCase() === title.toLowerCase();
             if (year) return titleMatch && movie.year === year;
             return titleMatch;
         });
-        
+
         if (isDuplicate) {
             showToast('This movie is already in your library!', 'warning');
             return;
         }
-        
+
         // Create temporary movie object for optimistic UI
         const tempId = 'temp-' + Date.now();
+        const mediaType = addForm.dataset.mediaType || 'movie';
+        const totalSeasons = addForm.dataset.totalSeasons || null;
+
         const optimisticMovie = {
             id: tempId,
             title: title,
@@ -564,10 +608,16 @@ document.addEventListener('DOMContentLoaded', () => {
             trailer_url: document.getElementById('trailer_url').value,
             description: document.getElementById('description').value,
             rating: document.getElementById('rating').value,
+            type: mediaType,
+            totalSeasons: totalSeasons,
             platforms: [],
             created_at: new Date().toISOString(),
             status: 'to_watch' // Default status
         };
+
+        // Reset form dataset for next use
+        delete addForm.dataset.mediaType;
+        delete addForm.dataset.totalSeasons;
 
         // --- Optimistic UI Update START ---
         // 1. Close modal immediately
@@ -576,7 +626,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 2. Add to local list immediately
         movies.unshift(optimisticMovie);
-        
+
         // 3. Render immediately
         // Use View Transition if available for smooth insertion
         if (document.startViewTransition) {
@@ -596,17 +646,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(optimisticMovie) // Send data (server will ignore temp ID)
             });
-            
+
             if (res.ok) {
                 const savedMovie = await res.json();
-                
+
                 // Replace temp movie with real one
                 const index = movies.findIndex(m => m.id === tempId);
                 if (index !== -1) {
                     movies[index] = savedMovie;
                     // Update cache
                     localStorage.setItem('movies_cache', JSON.stringify(movies));
-                    
+
                     // Update the DOM element with the real ID so it becomes clickable
                     const tempCard = document.querySelector(`.movie-card[data-movie-id="${tempId}"]`);
                     if (tempCard) {
@@ -616,11 +666,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Fallback: just re-render if card not found for some reason
                         renderMovies(false);
                     }
-                    
+
                     // Check streaming platforms in background
                     console.log('Checking platforms for:', savedMovie.title);
                     checkStreamingPlatforms(savedMovie.title, savedMovie.year, savedMovie.id);
-                    
+
                     showToast('Movie saved!', 'success');
                 }
             } else {
@@ -638,7 +688,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function checkStreamingPlatforms(title, year, movieId) {
         console.log(`Starting platform check for ${title} (${year}) ID: ${movieId}`);
-        
+
         // 1. Server Check (Promise) - IMPROVED to check multiple regions
         const serverCheck = (async () => {
             try {
@@ -654,9 +704,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.error('Response text:', text.substring(0, 500));
                         return false;
                     }
-                    
+
                     console.log('Server check result:', data);
-                    
+
                     // Show debug info
                     if (data.debug) {
                         console.log('Debug info:', data.debug);
@@ -667,7 +717,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             console.log('Platforms found in HTML:', data.debug.platforms_found);
                         }
                     }
-                    
+
                     if (data.platforms && data.platforms.length > 0) {
                         console.log('Found platforms:', data.platforms);
                         updateMoviePlatforms(movieId, data.platforms);
@@ -687,7 +737,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })();
 
         // Client check removed due to CORS/Proxy issues. Relying on improved server-side check.
-        
+
         Promise.allSettled([serverCheck]).then(() => {
             console.log('All platform checks finished');
         });
@@ -708,17 +758,17 @@ document.addEventListener('DOMContentLoaded', () => {
             // Let's overwrite for now to keep it clean
             movie.platforms = platformData;
             localStorage.setItem('movies_cache', JSON.stringify(movies));
-            
+
             // Silently update server
             fetch(API_URL, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id: movieId, platforms: platformData })
             });
-            
+
             // Force re-render
             renderMovies(false);
-            
+
             // Show toast only if we actually found something
             if (platformData.length > 0) {
                 // showToast(`Found streaming on: ${platformData.length} platforms`, 'success');
@@ -741,14 +791,14 @@ document.addEventListener('DOMContentLoaded', () => {
         mobileMenuToggle.addEventListener('click', () => {
             mainNav.classList.toggle('mobile-open');
         });
-        
+
         // Close mobile menu when clicking nav buttons or logout
         const closeMobileMenu = () => {
             if (window.innerWidth <= 850) {
                 mainNav.classList.remove('mobile-open');
             }
         };
-        
+
         if (navLibraryMobile) {
             navLibraryMobile.addEventListener('click', () => {
                 if (navLibrary) navLibrary.click();
@@ -773,18 +823,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 closeMobileMenu();
             });
         }
-        
+
         // Close mobile menu when clicking outside
         document.addEventListener('click', (e) => {
-            if (window.innerWidth <= 850 && 
-                !mainNav.contains(e.target) && 
+            if (window.innerWidth <= 850 &&
+                !mainNav.contains(e.target) &&
                 !mobileMenuToggle.contains(e.target) &&
                 mainNav.classList.contains('mobile-open')) {
                 mainNav.classList.remove('mobile-open');
             }
         });
     }
-    
+
     navLibrary.addEventListener('click', () => {
         currentView = 'to_watch';
         updateNavState();
@@ -801,15 +851,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (active) active.classList.add('active');
             if (inactive) inactive.classList.remove('active');
         };
-        
+
         if (currentView === 'to_watch') {
             setActive(navLibrary, navWatched);
             setActive(navLibraryMobile, navWatchedMobile);
-            openAddModalBtn.style.display = 'flex'; 
+            openAddModalBtn.style.display = 'flex';
         } else {
             setActive(navWatched, navLibrary);
             setActive(navWatchedMobile, navLibraryMobile);
-            openAddModalBtn.style.display = 'none'; 
+            openAddModalBtn.style.display = 'none';
         }
     }
 
@@ -849,17 +899,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.currentImdbRequest) {
                 window.currentImdbRequest.abort();
             }
-            
+
             const controller = new AbortController();
             window.currentImdbRequest = controller;
-            
+
             const res = await fetch(`${IMDB_SEARCH_URL}?q=${encodeURIComponent(query)}`, {
                 signal: controller.signal
             });
-            
+
             // Check if this request was aborted
             if (controller.signal.aborted) return;
-            
+
             const results = await res.json();
             renderImdbResults(results);
             window.currentImdbRequest = null;
@@ -877,29 +927,29 @@ document.addEventListener('DOMContentLoaded', () => {
             imdbResults.classList.add('hidden');
             return;
         }
-        
+
         // Use DocumentFragment for better performance
         const fragment = document.createDocumentFragment();
         results.forEach(item => {
             const div = document.createElement('div');
             div.className = 'imdb-result-item';
             const imgSrc = item.image ? item.image : '';
-            const imgHtml = imgSrc 
+            const imgHtml = imgSrc
                 ? `<img src="${imgSrc}" class="imdb-result-img" alt="" loading="lazy">`
                 : `<div class="imdb-result-img" style="display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:#aaa;">No Img</div>`;
             div.innerHTML = `${imgHtml}<div class="imdb-result-info"><div class="imdb-result-title">${item.title}</div><div class="imdb-result-year">${item.year || ''}</div></div>`;
-            
+
             div.addEventListener('click', () => {
                 // Optimistic UI
                 document.getElementById('title').value = item.title || '';
                 document.getElementById('year').value = item.year || '';
                 let img = item.image || '';
-                if (img.includes('_V1_')) img = img.replace(/_V1_.*?.jpg$/, '_V1_.jpg'); 
+                if (img.includes('_V1_')) img = img.replace(/_V1_.*?.jpg$/, '_V1_.jpg');
                 document.getElementById('image_url').value = img;
 
                 imdbResults.classList.add('hidden');
-                imdbSearchInput.value = ''; 
-                
+                imdbSearchInput.value = '';
+
                 // Reveal form and hide toggle
                 addForm.classList.remove('hidden');
                 manualEntryToggle.classList.add('hidden');
@@ -909,7 +959,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             fragment.appendChild(div);
         });
-        
+
         imdbResults.innerHTML = '';
         imdbResults.appendChild(fragment);
         imdbResults.classList.remove('hidden');
@@ -929,7 +979,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (details.error) {
                 console.error('Server Error:', details.error);
                 // Don't alert, just log, let user fill manual
-                return; 
+                return;
             }
 
             document.getElementById('title').value = details.title || '';
@@ -938,7 +988,15 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('image_url').value = details.image_url || '';
             document.getElementById('trailer_url').value = details.trailer_url || '';
             document.getElementById('description').value = details.description || '';
-            document.getElementById('rating').value = details.rating || ''; 
+            document.getElementById('rating').value = details.rating || '';
+
+            // Store type and totalSeasons for TV show handling
+            if (details.type) {
+                addForm.dataset.mediaType = details.type;
+            }
+            if (details.totalSeasons) {
+                addForm.dataset.totalSeasons = details.totalSeasons;
+            }
 
         } catch (err) {
             console.error('Error fetching details:', err);
@@ -968,7 +1026,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const res = await fetch(API_URL);
             const newMovies = await res.json();
-            
+
             // Sort movies by created_at (newest first) or by id (newest first)
             // This ensures newly added movies always appear at the top
             newMovies.sort((a, b) => {
@@ -986,17 +1044,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const idB = String(b.id || '');
                 return idB.localeCompare(idA);
             });
-            
+
             // Only update if different
             if (JSON.stringify(newMovies) !== JSON.stringify(movies)) {
                 movies = newMovies;
                 // Update cache
                 localStorage.setItem('movies_cache', JSON.stringify(movies));
-                
+
                 // Add delay before rendering to reduce initial CPU spike
                 requestAnimationFrame(() => {
                     renderMovies(true);
-                    
+
                     // Defer genre filter update significantly to avoid blocking
                     if (window.requestIdleCallback) {
                         requestIdleCallback(() => updateGenreFilter(), { timeout: 3000 });
@@ -1020,13 +1078,21 @@ document.addEventListener('DOMContentLoaded', () => {
         // Cache filtered results to avoid re-filtering
         let filtered = movies.filter(movie => {
             if (movie.status !== currentView) return false;
-            const matchesSearch = movie.title.toLowerCase().includes(searchTerm) || 
-                                  (movie.genre && movie.genre.toLowerCase().includes(searchTerm));
+            const matchesSearch = movie.title.toLowerCase().includes(searchTerm) ||
+                (movie.genre && movie.genre.toLowerCase().includes(searchTerm));
             if (!matchesSearch) return false;
-            if (selectedGenre && (!movie.genre || !movie.genre.includes(selectedGenre))) return false;
+
+            // Handle special type filters
+            if (selectedGenre === '__tv_shows__') {
+                if (movie.type !== 'series') return false;
+            } else if (selectedGenre === '__movies__') {
+                if (movie.type === 'series') return false;
+            } else if (selectedGenre && (!movie.genre || !movie.genre.includes(selectedGenre))) {
+                return false;
+            }
             return true;
         });
-        
+
         // Ensure filtered results are sorted by newest first
         filtered.sort((a, b) => {
             if (a.created_at && b.created_at) {
@@ -1057,7 +1123,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     existingCardMap.set(card.dataset.movieId, card);
                 }
             });
-            
+
             // Remove cards that are no longer needed
             existingCards.forEach(card => {
                 const movieId = card.dataset.movieId;
@@ -1065,19 +1131,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     card.remove();
                 }
             });
-            
+
             let index = 0;
             const batchSize = 8; // Increased batch size
-            
+
             const renderBatch = () => {
                 const startTime = performance.now();
                 const end = Math.min(index + batchSize, filtered.length);
                 const fragment = document.createDocumentFragment();
-                
+
                 for (let i = index; i < end; i++) {
                     const movie = filtered[i];
                     let card = existingCardMap.get(movie.id);
-                    
+
                     if (!card) {
                         card = createMovieCard(movie);
                         fragment.appendChild(card);
@@ -1088,13 +1154,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         // But moving elements can be expensive.
                         // Simpler approach: if incremental, assume order is mostly mostly correct or just append new ones.
                         // But sorting matters.
-                        
+
                         // To guarantee order, we must append to fragment or grid in order.
                         // If it's already in grid, we can move it.
                         existingCardMap.delete(movie.id);
                         fragment.appendChild(card);
                     }
-                    
+
                     // Yield if taking too long
                     if (performance.now() - startTime > 10) {
                         if (fragment.children.length > 0) grid.appendChild(fragment);
@@ -1103,9 +1169,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         return;
                     }
                 }
-                
+
                 if (fragment.children.length > 0) grid.appendChild(fragment);
-                
+
                 index = end;
                 if (index < filtered.length) {
                     requestAnimationFrame(renderBatch);
@@ -1114,7 +1180,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     existingCardMap.forEach(card => card.remove());
                 }
             };
-            
+
             requestAnimationFrame(renderBatch);
         } else {
             // Small lists or non-incremental - render all at once
@@ -1125,10 +1191,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     existingCardMap.set(card.dataset.movieId, card);
                 }
             });
-            
+
             grid.innerHTML = '';
             const fragment = document.createDocumentFragment();
-            
+
             filtered.forEach(movie => {
                 let card = existingCardMap.get(movie.id);
                 if (!card) {
@@ -1147,22 +1213,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const cardImage = document.createElement('div');
         cardImage.className = 'card-image';
-        
+
+        // Add TV badge for series
+        if (movie.type === 'series') {
+            const typeBadge = document.createElement('span');
+            typeBadge.className = 'type-badge tv-show';
+            typeBadge.textContent = 'TV Show';
+            cardImage.appendChild(typeBadge);
+        }
+
         if (movie.image_url && movie.image_url.trim() !== '') {
             const img = document.createElement('img');
-            img.alt = movie.title;
+            img.alt = decodeHtmlEntities(movie.title);
             img.className = 'movie-poster';
             img.loading = 'lazy'; // Native lazy loading
             img.decoding = 'async';
-            
+
             // Set immediate src with English locale to avoid showing German images
             // This ensures we get English/American posters immediately
             const isImdbImage = movie.image_url.includes('media-amazon.com');
-            
+
             if (isImdbImage) {
                 // Set optimized English URL immediately (no delay)
                 img.src = getOptimizedImageUrl(movie.image_url, 400);
-                
+
                 // Then try to upgrade to TMDB English poster in background (better quality)
                 fetch(`api/get_english_poster.php?title=${encodeURIComponent(movie.title)}${movie.year ? '&year=' + encodeURIComponent(movie.year) : ''}`)
                     .then(res => res.json())
@@ -1178,7 +1252,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 // Not an IMDb image, set it immediately
                 img.src = movie.image_url;
-                
+
                 // Try TMDB in background for consistency
                 fetch(`api/get_english_poster.php?title=${encodeURIComponent(movie.title)}${movie.year ? '&year=' + encodeURIComponent(movie.year) : ''}`)
                     .then(res => res.json())
@@ -1191,71 +1265,72 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Keep original URL if TMDB fails
                     });
             }
-            
-            img.onerror = function() {
+
+            img.onerror = function () {
                 if (!this.classList.contains('image-error-handled')) {
                     this.classList.add('image-error-handled');
                     if (this.parentElement) {
                         this.parentElement.classList.add('loaded'); // Stop shimmer
                         const placeholder = document.createElement('div');
                         placeholder.className = 'no-image-placeholder';
-                        placeholder.textContent = movie.title;
+                        placeholder.textContent = decodeHtmlEntities(movie.title);
                         this.parentElement.replaceChild(placeholder, this);
                     }
                 }
             };
-            
-            img.onload = function() {
+
+            img.onload = function () {
                 this.classList.add('image-loaded');
                 // Remove shimmer effect from parent
                 if (this.parentElement) {
                     this.parentElement.classList.add('loaded');
                 }
             };
-            
+
             cardImage.appendChild(img);
         } else {
             const placeholder = document.createElement('div');
             placeholder.className = 'no-image-placeholder';
-            placeholder.textContent = movie.title;
+            placeholder.textContent = decodeHtmlEntities(movie.title);
             cardImage.appendChild(placeholder);
         }
 
         const cardInfo = document.createElement('div');
         cardInfo.className = 'card-info';
-        
+
         const headerRow = document.createElement('div');
         headerRow.className = 'card-header-row';
-        
+
         const title = document.createElement('div');
         title.className = 'card-title';
-        title.textContent = movie.title;
-        title.title = movie.title;
-        
+        const decodedTitle = decodeHtmlEntities(movie.title);
+        title.textContent = decodedTitle;
+        title.title = decodedTitle;
+
         const year = document.createElement('div');
         year.className = 'card-year';
         year.textContent = movie.year || '';
-        
+
         headerRow.appendChild(title);
         headerRow.appendChild(year);
-        
+
         const genres = document.createElement('div');
         genres.className = 'card-genres';
         genres.textContent = movie.genre || '';
-        
+
         cardInfo.appendChild(headerRow);
         cardInfo.appendChild(genres);
-        
+
         div.appendChild(cardImage);
         div.appendChild(cardInfo);
-        
+
         return div;
     }
 
     function getPlatformInfo(platform) {
         // Normalize platform name
         const p = platform.toLowerCase().replace(/\s+/g, '');
-        
+
         // Map platform names to local file names (check .avif, .jpg, and .png)
         const localFileMap = {
             'netflix': ['netflix.avif', 'netflix.jpg', 'netflix.png'],
@@ -1264,7 +1339,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'hbomax': ['max.avif', 'max.jpg', 'max.png', 'hbomax.avif', 'hbomax.jpg', 'hbomax.png'], // File is named max.avif
             'voyo': ['voyo.avif', 'voyo.jpg', 'voyo.png']
         };
-        
+
         // Search URLs
         const searchUrls = {
             'netflix': 'https://www.netflix.com/search?q=',
@@ -1273,7 +1348,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'hbomax': 'https://play.hbomax.com/search?q=',
             'voyo': 'https://voyo.nova.cz/hledani?q=' // Assuming CZ, adjust if needed
         };
-        
+
         // Fallback to external URLs if local files don't exist
         const fallbackLogos = {
             'netflix': 'https://m.media-amazon.com/images/I/31JfJ6dXD9L.png',
@@ -1282,9 +1357,9 @@ document.addEventListener('DOMContentLoaded', () => {
             'hbomax': 'https://upload.wikimedia.org/wikipedia/commons/1/17/HBO_Max_Logo.svg',
             'voyo': 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Voyo_Logo.svg'
         };
-        
+
         let logoUrl = null;
-        
+
         // Try local files first
         const fileOptions = localFileMap[p];
         if (fileOptions) {
@@ -1292,7 +1367,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             logoUrl = fallbackLogos[p];
         }
-        
+
         return {
             logo: logoUrl,
             searchUrl: searchUrls[p] || null
@@ -1300,14 +1375,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function openDetailsModal(movie) {
-        modalTitle.textContent = movie.title;
-        
+        modalTitle.textContent = decodeHtmlEntities(movie.title);
+
         // Force refresh platforms if empty
         if (!movie.platforms || movie.platforms.length === 0) {
             console.log('Refreshing platforms for', movie.title);
             checkStreamingPlatforms(movie.title, movie.year, movie.id);
         }
-        
+
         let ratingHtml = '';
         if (movie.rating) {
             ratingHtml = `<span class="star-rating" style="margin-left: 12px; display: flex; align-items: center; gap: 4px;">${icons.star} ${movie.rating}/10</span>`;
@@ -1323,7 +1398,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 badgesContainer.style.display = 'inline-flex';
                 badgesContainer.style.alignItems = 'center';
                 badgesContainer.style.gap = '8px';
-                
+
                 platforms.forEach(platformData => {
                     let platformName = '';
                     let directUrl = null;
@@ -1339,7 +1414,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const platformInfo = getPlatformInfo(platformName);
                     const logoUrl = platformInfo.logo;
-                    
+
                     // Create link or span depending on whether we have a search URL or direct URL
                     let badge;
                     if (directUrl) {
@@ -1357,22 +1432,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         badge = document.createElement('span');
                     }
-                    
+
                     badge.className = `platform-badge platform-${platformName}`;
                     badge.title = `Watch on ${platformName}`;
-                    
+
                     if (logoUrl) {
                         const img = document.createElement('img');
                         img.alt = platformName;
                         img.loading = 'eager'; // Load immediately for badges
                         img.style.display = 'block';
-                        
+
                         // Try .avif first, fallback to .jpg if it fails
                         const tryLoadImage = (url) => {
                             img.src = url;
                         };
-                        
-                        img.onerror = function() {
+
+                        img.onerror = function () {
                             // Try different formats in order: .avif -> .jpg -> .png -> external URL
                             if (this.src.includes('.avif')) {
                                 // Try .jpg next
@@ -1416,29 +1491,29 @@ document.addEventListener('DOMContentLoaded', () => {
                             this.style.display = 'none';
                             badge.textContent = platformName.charAt(0).toUpperCase();
                         };
-                        
-                        img.onload = function() {
+
+                        img.onload = function () {
                             // Ensure image is visible when loaded
                             this.style.display = 'block';
                             this.style.opacity = '1';
                         };
-                        
+
                         tryLoadImage(logoUrl);
                         badge.appendChild(img);
                     } else {
                         badge.textContent = platformName.charAt(0).toUpperCase();
                     }
-                    
+
                     badgesContainer.appendChild(badge);
                 });
-                
+
                 // Always add 1337x.to link after badges (inline)
                 const separator = document.createElement('span');
                 separator.textContent = ' | ';
                 separator.style.margin = '0 8px';
                 separator.style.color = 'var(--text-secondary, #999)';
                 badgesContainer.appendChild(separator);
-                
+
                 const unavailableLink = document.createElement('a');
                 const searchQuery = encodeURIComponent(movie.title);
                 unavailableLink.href = `https://1337x.to/search/${searchQuery}/1/`;
@@ -1450,7 +1525,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 unavailableLink.style.cursor = 'pointer';
                 unavailableLink.title = `Search "${movie.title}" on 1337x.to`;
                 badgesContainer.appendChild(unavailableLink);
-                
+
                 platformsContainer.innerHTML = '';
                 platformsContainer.appendChild(badgesContainer);
                 platformsContainer.style.display = 'block';
@@ -1474,17 +1549,35 @@ document.addEventListener('DOMContentLoaded', () => {
             platformsContainer.style.display = 'none';
         }
 
+        // Build meta content with seasons for TV shows
+        let seasonsHtml = '';
+        if (movie.type === 'series' && movie.totalSeasons) {
+            seasonsHtml = `
+                <span class="dot">•</span>
+                <span class="seasons-info">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
+                        <polyline points="17 2 12 7 7 2"></polyline>
+                    </svg>
+                    ${movie.totalSeasons} Season${movie.totalSeasons > 1 ? 's' : ''}
+                </span>
+            `;
+        }
+
         const metaContainer = document.querySelector('.modal-meta');
         metaContainer.innerHTML = `
             <span id="modal-year">${movie.year || ''}</span>
             <span class="dot">•</span>
-            <span id="modal-genre">${movie.genre || ''}</span>
+            <span id="modal-genre">${decodeHtmlEntities(movie.genre) || ''}</span>
+            ${seasonsHtml}
             ${ratingHtml}
         `;
 
+        // Decode and truncate description
         const decodedDescription = decodeHtmlEntities(movie.description || 'No description available.');
-        modalDesc.textContent = decodedDescription;
-        
+        const truncatedDescription = truncateDescription(decodedDescription, 5);
+        modalDesc.textContent = truncatedDescription;
+
         if (movie.image_url) {
             // Set immediate src with English locale to avoid showing German images
             const isImdbImage = movie.image_url.includes('media-amazon.com');
@@ -1492,7 +1585,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Set optimized English URL immediately (no delay)
                 modalImg.src = getOptimizedImageUrl(movie.image_url, 800);
                 modalImg.style.display = 'block';
-                
+
                 // Then try to upgrade to TMDB English poster in background (better quality)
                 fetch(`api/get_english_poster.php?title=${encodeURIComponent(movie.title)}${movie.year ? '&year=' + encodeURIComponent(movie.year) : ''}`)
                     .then(res => res.json())
@@ -1509,7 +1602,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Not an IMDb image, set it immediately
                 modalImg.src = movie.image_url;
                 modalImg.style.display = 'block';
-                
+
                 // Try TMDB in background for consistency
                 fetch(`api/get_english_poster.php?title=${encodeURIComponent(movie.title)}${movie.year ? '&year=' + encodeURIComponent(movie.year) : ''}`)
                     .then(res => res.json())
@@ -1558,54 +1651,95 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ... (Keep update/delete functions) ...
     function updateGenreFilter() {
-        const allGenres = new Set();
+        const allGenres = new Map(); // Use Map to store genre:count
+        let tvShowCount = 0;
+        let movieCount = 0;
+
         movies.forEach(m => {
-            if (m.genre) m.genre.split(',').forEach(g => allGenres.add(g.trim()));
-        });
-        const current = genreFilter.value;
-        
-        // Use DocumentFragment for better performance
-        const fragment = document.createDocumentFragment();
-        const defaultOption = document.createElement('option');
-        defaultOption.value = '';
-        defaultOption.textContent = 'All Genres';
-        fragment.appendChild(defaultOption);
-        
-        Array.from(allGenres).sort().forEach(g => {
-            if (g) {
-                const option = document.createElement('option');
-                option.value = g;
-                option.textContent = g;
-                fragment.appendChild(option);
+            // Count TV shows vs movies
+            if (m.type === 'series') {
+                tvShowCount++;
+            } else {
+                movieCount++;
+            }
+
+            // Count by genre
+            if (m.genre) {
+                m.genre.split(',').forEach(g => {
+                    const genre = g.trim();
+                    if (genre) {
+                        allGenres.set(genre, (allGenres.get(genre) || 0) + 1);
+                    }
+                });
             }
         });
-        
+
+        const current = genreFilter.value;
+
+        // Use DocumentFragment for better performance
+        const fragment = document.createDocumentFragment();
+
+        // All items option
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = `All (${movies.length})`;
+        fragment.appendChild(defaultOption);
+
+        // Add TV Shows filter option
+        if (tvShowCount > 0) {
+            const tvShowOption = document.createElement('option');
+            tvShowOption.value = '__tv_shows__';
+            tvShowOption.textContent = `📺 TV Shows (${tvShowCount})`;
+            fragment.appendChild(tvShowOption);
+        }
+
+        // Add Movies filter option
+        if (movieCount > 0) {
+            const movieOption = document.createElement('option');
+            movieOption.value = '__movies__';
+            movieOption.textContent = `🎬 Movies (${movieCount})`;
+            fragment.appendChild(movieOption);
+        }
+
+        // Sort genres alphabetically and add with counts
+        const sortedGenres = Array.from(allGenres.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+        sortedGenres.forEach(([genre, count]) => {
+            const option = document.createElement('option');
+            option.value = genre;
+            option.textContent = `${genre} (${count})`;
+            fragment.appendChild(option);
+        });
+
         genreFilter.innerHTML = '';
         genreFilter.appendChild(fragment);
-        if (allGenres.has(current)) genreFilter.value = current;
+
+        // Restore selection if still valid
+        if (current === '__tv_shows__' || current === '__movies__' || allGenres.has(current) || current === '') {
+            genreFilter.value = current;
+        }
     }
 
     function toggleStatus(id, newStatus) {
         // Optimistic UI update
         const movie = movies.find(m => m.id === id);
         if (!movie) return;
-        
+
         const oldStatus = movie.status;
         movie.status = newStatus;
-        
+
         // Update cache
         localStorage.setItem('movies_cache', JSON.stringify(movies));
-        
+
         // Close modal immediately
         detailsModal.classList.add('hidden');
-        
+
         // Fluid remove using View Transitions
         if (document.startViewTransition) {
             if (currentView !== newStatus) {
                 // Mark card as exiting
                 const card = document.querySelector(`.movie-card[data-movie-id="${id}"]`);
                 if (card) card.style.viewTransitionName = 'exiting-card';
-                
+
                 document.startViewTransition(() => {
                     if (card) card.remove();
                     if (grid.children.length === 0) renderMovies(false);
@@ -1627,7 +1761,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const message = newStatus === 'watched' ? 'Marked as watched!' : 'Moved to library!';
         showToast(message, 'success');
-        
+
         // Update server in background
         fetch(API_URL, {
             method: 'PUT',
@@ -1653,17 +1787,17 @@ document.addEventListener('DOMContentLoaded', () => {
     async function deleteMovie(id) {
         const confirmed = await showConfirm('Are you sure you want to delete this movie?', 'Delete Movie');
         if (!confirmed) return;
-        
+
         // Optimistic UI update
         const movieToDelete = movies.find(m => m.id === id);
         movies = movies.filter(m => m.id !== id);
-        
+
         // Update cache
         localStorage.setItem('movies_cache', JSON.stringify(movies));
-        
+
         // Close modal immediately
         detailsModal.classList.add('hidden');
-        
+
         // Use View Transitions if available for fluid reordering
         if (document.startViewTransition) {
             // Set transition name for the deleted card to make it fade out nicely?
@@ -1674,13 +1808,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Just setting display:none within startViewTransition works well for reordering.
                 card.style.viewTransitionName = 'deleting-card';
             }
-            
+
             document.startViewTransition(() => {
                 if (card) card.remove();
                 // Force layout calc? usually not needed if we remove it.
                 // But we also need to handle "empty grid" message if needed.
                 if (movies.length === 0 && grid.children.length <= 1) { // <=1 because we just removed one
-                     renderMovies(false);
+                    renderMovies(false);
                 }
             });
         } else {
@@ -1695,16 +1829,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 300);
             }
         }
-        
+
         showToast('Movie deleted successfully', 'success');
-        
+
         // Defer genre filter update
         if (window.requestIdleCallback) {
             requestIdleCallback(() => updateGenreFilter(), { timeout: 1000 });
         } else {
             setTimeout(() => updateGenreFilter(), 200);
         }
-        
+
         // Update server in background
         fetch(API_URL, {
             method: 'DELETE',

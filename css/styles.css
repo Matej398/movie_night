@@ -36,7 +36,8 @@ body {
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     overflow-y: scroll;
-    overflow-x: hidden; /* Prevent horizontal scrolling */
+    overflow-x: hidden;
+    /* Prevent horizontal scrolling */
     width: 100%;
     max-width: 100%;
 }
@@ -46,7 +47,8 @@ body {
     margin: 0 auto;
     padding: 0 40px 40px;
     width: 100%;
-    overflow-x: hidden; /* Prevent horizontal overflow */
+    overflow-x: hidden;
+    /* Prevent horizontal overflow */
     box-sizing: border-box;
 }
 
@@ -63,7 +65,7 @@ header {
     background: rgba(0, 0, 0, 0.7);
     backdrop-filter: saturate(180%) blur(20px);
     -webkit-backdrop-filter: saturate(180%) blur(20px);
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     margin-left: -40px;
     margin-right: -40px;
     padding-left: 40px;
@@ -126,7 +128,7 @@ nav button:hover {
 nav button.active {
     background: #3a3a3c;
     color: white;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* User Menu */
@@ -166,7 +168,8 @@ nav button.active {
     border-radius: 12px;
     box-shadow: var(--shadow-lg);
     min-width: 200px;
-    z-index: 1000; /* Higher z-index to ensure it's above everything */
+    z-index: 1000;
+    /* Higher z-index to ensure it's above everything */
     overflow: hidden;
     opacity: 0;
     visibility: hidden;
@@ -182,6 +185,7 @@ nav button.active {
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -224,7 +228,8 @@ nav button.active {
 }
 
 #logout-btn {
-    display: none; /* Hide mobile logout button on desktop */
+    display: none;
+    /* Hide mobile logout button on desktop */
 }
 
 /* Hide mobile logout button in nav on desktop */
@@ -248,7 +253,9 @@ nav .mobile-logout {
 }
 
 /* Search Inputs & Selects */
-input, select, textarea {
+input,
+select,
+textarea {
     background: #1c1c1e;
     border: 1px solid transparent;
     color: white;
@@ -260,7 +267,9 @@ input, select, textarea {
     transition: var(--transition);
 }
 
-input:focus, select:focus, textarea:focus {
+input:focus,
+select:focus,
+textarea:focus {
     background: #2c2c2e;
     border-color: var(--primary);
 }
@@ -310,7 +319,7 @@ select {
     background-repeat: no-repeat;
     background-position: right 12px center;
     background-size: 16px;
-    padding-right: 40px; 
+    padding-right: 40px;
     cursor: pointer;
     min-width: 150px;
     transition: background-color 0.4s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.4s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s cubic-bezier(0.25, 1, 0.5, 1);
@@ -344,7 +353,7 @@ select:hover {
 }
 
 .btn-secondary {
-    background-color: rgba(255,255,255,0.1);
+    background-color: rgba(255, 255, 255, 0.1);
     color: var(--text-main);
     border: none;
     padding: 12px 24px;
@@ -356,7 +365,7 @@ select:hover {
 }
 
 .btn-secondary:hover {
-    background-color: rgba(255,255,255,0.2);
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Modal Common */
@@ -389,7 +398,7 @@ select:hover {
     display: flex;
     transform: scale(0.95) translateY(20px);
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .modal-content-small {
@@ -425,7 +434,7 @@ select:hover {
 /* Add Movie Modal Specifics */
 .modal-header {
     padding: 24px 32px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -477,7 +486,8 @@ label {
     margin-bottom: 8px;
 }
 
-input, textarea {
+input,
+textarea {
     width: 100%;
 }
 
@@ -502,7 +512,7 @@ input, textarea {
 
 .divider {
     border: none;
-    border-top: 1px solid rgba(255,255,255,0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     margin: 24px 0;
 }
 
@@ -538,7 +548,7 @@ input, textarea {
 }
 
 .imdb-result-item:hover {
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .imdb-result-img {
@@ -576,9 +586,11 @@ input, textarea {
 }
 
 .modal-poster {
-    width: 38%; /* Slightly smaller to crop edges */
+    width: 38%;
+    /* Slightly smaller to crop edges */
     min-height: 500px;
-    background: #000 !important; /* Black background to hide any gaps */
+    background: #000 !important;
+    /* Black background to hide any gaps */
     position: relative;
     display: block;
     padding: 0 !important;
@@ -592,8 +604,10 @@ input, textarea {
     position: absolute !important;
     top: 0 !important;
     left: 0 !important;
-    width: 105% !important; /* Slightly larger to crop edges */
-    height: 105% !important; /* Slightly larger to crop edges */
+    width: 105% !important;
+    /* Slightly larger to crop edges */
+    height: 105% !important;
+    /* Slightly larger to crop edges */
     object-fit: cover !important;
     object-position: center center !important;
     display: block !important;
@@ -601,16 +615,19 @@ input, textarea {
     padding: 0 !important;
     border: none !important;
     background: transparent !important;
-    transform: translate(-2.5%, -2.5%); /* Center the oversized image */
+    transform: translate(-2.5%, -2.5%);
+    /* Center the oversized image */
 }
 
 @media (max-width: 850px) {
     .modal-poster {
-        border-radius: 24px 24px 0 0; /* Top radius for mobile */
+        border-radius: 24px 24px 0 0;
+        /* Top radius for mobile */
     }
-    
+
     .modal-poster img {
-        border-radius: 24px 24px 0 0; /* Top radius for mobile */
+        border-radius: 24px 24px 0 0;
+        /* Top radius for mobile */
     }
 }
 
@@ -717,7 +734,7 @@ input, textarea {
 
 .btn-trailer:hover {
     transform: scale(1.02);
-    box-shadow: 0 5px 15px rgba(255,255,255,0.2);
+    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
 }
 
 .btn-justwatch {
@@ -735,8 +752,8 @@ input, textarea {
 .btn-action {
     flex: 1;
     padding: 14px;
-    border: 1px solid rgba(255,255,255,0.15);
-    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.05);
     color: white;
     border-radius: var(--btn-radius);
     cursor: pointer;
@@ -749,7 +766,7 @@ input, textarea {
 }
 
 .btn-action:hover {
-    background: rgba(255,255,255,0.15);
+    background: rgba(255, 255, 255, 0.15);
     border-color: white;
 }
 
@@ -778,7 +795,7 @@ input, textarea {
     position: absolute;
     top: -40px;
     right: 0;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
     z-index: 20;
 }
 
@@ -820,7 +837,8 @@ input, textarea {
     display: flex;
     flex-direction: column;
     will-change: transform;
-    transform: translateZ(0); /* Force GPU acceleration */
+    transform: translateZ(0);
+    /* Force GPU acceleration */
 }
 
 .card-image {
@@ -836,13 +854,14 @@ input, textarea {
     background: transparent;
     padding: 0 !important;
     margin: 0 0 14px 0 !important;
-    border: 0 solid transparent !important; /* Explicitly remove border */
+    border: 0 solid transparent !important;
+    /* Explicitly remove border */
     outline: 0 solid transparent !important;
     box-sizing: border-box;
     display: block;
 }
 
-.card-image > * {
+.card-image>* {
     border: none !important;
     outline: none !important;
     margin: 0 !important;
@@ -873,9 +892,12 @@ input, textarea {
     box-shadow: none !important;
     transition: transform 0.5s ease, opacity 0.4s ease;
     will-change: transform, opacity;
-    transform: translateZ(0); /* Force GPU acceleration */
-    content-visibility: auto; /* Improve rendering performance */
-    contain-intrinsic-size: 220px 330px; /* Hint for layout */
+    transform: translateZ(0);
+    /* Force GPU acceleration */
+    content-visibility: auto;
+    /* Improve rendering performance */
+    contain-intrinsic-size: 220px 330px;
+    /* Hint for layout */
 }
 
 .movie-poster {
@@ -907,7 +929,8 @@ input, textarea {
     display: flex;
     flex-direction: column;
     will-change: transform;
-    transform: translateZ(0); /* Force GPU acceleration */
+    transform: translateZ(0);
+    /* Force GPU acceleration */
     /* Transition for layout changes (if View Transitions not supported) */
     transition: opacity 0.3s ease, transform 0.3s ease;
 }
@@ -921,7 +944,7 @@ input, textarea {
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%);
+    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0) 100%);
     transform: skewX(-20deg) translateX(-150%);
     animation: shimmer 1.5s infinite;
     z-index: 1;
@@ -934,8 +957,13 @@ input, textarea {
 }
 
 @keyframes shimmer {
-    0% { transform: skewX(-20deg) translateX(-150%); }
-    100% { transform: skewX(-20deg) translateX(150%); }
+    0% {
+        transform: skewX(-20deg) translateX(-150%);
+    }
+
+    100% {
+        transform: skewX(-20deg) translateX(150%);
+    }
 }
 
 .card-image img {
@@ -984,7 +1012,6 @@ input, textarea {
     max-width: 140px;
     object-fit: contain;
     display: block;
-    vertical-align: middle;
     border-radius: 6px;
     background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.3);
@@ -1002,23 +1029,28 @@ input, textarea {
 
 /* Platform-specific border colors */
 .platform-badge.platform-netflix img {
-    border-color: #E50914 !important; /* Netflix Red */
+    border-color: #E50914 !important;
+    /* Netflix Red */
 }
 
 .platform-badge.platform-disneyplus img {
-    border-color: #5AA3FF !important; /* Disney+ Light Blue */
+    border-color: #5AA3FF !important;
+    /* Disney+ Light Blue */
 }
 
 .platform-badge.platform-skyshowtime img {
-    border-color: #ffffff !important; /* SkyShowtime White */
+    border-color: #ffffff !important;
+    /* SkyShowtime White */
 }
 
 .platform-badge.platform-hbomax img {
-    border-color: #8B50FF !important; /* HBO Max Purple */
+    border-color: #8B50FF !important;
+    /* HBO Max Purple */
 }
 
 .platform-badge.platform-voyo img {
-    border-color: #FF6B00 !important; /* Voyo Orange */
+    border-color: #FF6B00 !important;
+    /* Voyo Orange */
 }
 
 .platform-badge.platform-unavailable,
@@ -1105,50 +1137,60 @@ a.platform-badge.platform-unavailable:hover {
         flex-direction: column;
         gap: 20px;
         align-items: stretch;
-        margin-bottom: 20px; /* Reduced spacing since button is floating */
+        margin-bottom: 20px;
+        /* Reduced spacing since button is floating */
         margin-top: 0;
     }
-    
+
     .controls-row #open-add-modal {
-        display: none; /* Hide the button in controls row on mobile */
+        display: none;
+        /* Hide the button in controls row on mobile */
     }
+
     #filter-bar {
         max-width: 100%;
         flex-direction: column;
     }
+
     .modal-content {
         flex-direction: column;
         width: 95%;
         max-height: 90vh;
         overflow-y: auto;
     }
+
     .modal-body {
         flex-direction: column !important;
     }
+
     .modal-poster {
         width: 100% !important;
         height: 350px;
         min-height: 350px;
         flex-shrink: 0;
     }
+
     .modal-info {
         width: 100% !important;
         padding: 24px 20px;
         flex: 1;
         overflow-y: auto;
     }
+
     .modal-info h2 {
         font-size: 1.75rem;
     }
+
     .modal-meta {
         font-size: 0.9rem;
     }
+
     .app-container {
         padding: 0 20px 20px;
         margin: 0;
         max-width: 100%;
     }
-    
+
     /* Prevent unnecessary vertical scrolling on mobile */
     html {
         overflow-x: hidden;
@@ -1156,7 +1198,7 @@ a.platform-badge.platform-unavailable:hover {
         max-width: 100%;
         height: 100%;
     }
-    
+
     body {
         overflow-y: auto;
         overflow-x: hidden;
@@ -1165,38 +1207,40 @@ a.platform-badge.platform-unavailable:hover {
         min-height: 100vh;
         height: auto;
     }
+
     .grid {
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
         gap: 20px;
     }
+
     .card-image {
         height: 240px;
     }
-    
+
     .btn-primary {
         padding: 10px 20px;
         font-size: 0.9rem;
     }
-    
+
     .modal-actions {
         gap: 12px;
     }
-    
+
     .btn-trailer {
         padding: 12px 24px;
         font-size: 0.95rem;
     }
-    
+
     .btn-action {
         padding: 12px;
         font-size: 0.9rem;
         white-space: nowrap;
     }
-    
+
     .modal-status-actions {
         flex-wrap: nowrap;
     }
-    
+
     /* Floating Add Movie Button on Mobile */
     #open-add-modal {
         position: fixed;
@@ -1212,16 +1256,16 @@ a.platform-badge.platform-unavailable:hover {
         box-shadow: 0 4px 16px rgba(0, 113, 227, 0.4);
         z-index: 90;
     }
-    
+
     #open-add-modal svg {
         width: 24px;
         height: 24px;
     }
-    
+
     #open-add-modal .btn-text {
         display: none;
     }
-    
+
     /* Header Mobile */
     header {
         padding: 12px 20px;
@@ -1232,19 +1276,20 @@ a.platform-badge.platform-unavailable:hover {
         position: relative;
         margin-bottom: 20px;
     }
-    
+
     .logo h1 {
         display: none;
     }
-    
+
     .logo {
         gap: 0;
     }
-    
+
     #desktop-nav {
-        display: none; /* Hide desktop nav on mobile */
+        display: none;
+        /* Hide desktop nav on mobile */
     }
-    
+
     #main-nav {
         position: absolute;
         top: 100%;
@@ -1254,7 +1299,7 @@ a.platform-badge.platform-unavailable:hover {
         background: rgba(0, 0, 0, 0.95);
         backdrop-filter: saturate(180%) blur(20px);
         -webkit-backdrop-filter: saturate(180%) blur(20px);
-        border-bottom: 1px solid rgba(255,255,255,0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         padding: 12px 20px;
         margin: 0;
         border-radius: 0;
@@ -1263,11 +1308,11 @@ a.platform-badge.platform-unavailable:hover {
         gap: 8px;
         z-index: 100;
     }
-    
+
     #main-nav.mobile-open {
         display: flex;
     }
-    
+
     .mobile-menu-toggle {
         display: flex;
         background: transparent;
@@ -1283,42 +1328,42 @@ a.platform-badge.platform-unavailable:hover {
         position: relative;
         right: 0;
     }
-    
+
     .mobile-menu-toggle:hover {
         opacity: 0.7;
     }
-    
+
     .mobile-menu-toggle svg {
         width: 24px;
         height: 24px;
     }
-    
+
     #main-nav button {
         width: 100%;
         padding: 12px;
         text-align: center;
         border-radius: 12px;
     }
-    
+
     #main-nav .mobile-logout {
         margin-top: 4px;
-        border-top: 1px solid rgba(255,255,255,0.1);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
         padding-top: 16px;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
     }
-    
+
     #main-nav .mobile-logout svg {
         width: 18px;
         height: 18px;
     }
-    
+
     .user-menu {
         gap: 8px;
     }
-    
+
     /* Fix dropdown menu width on mobile to prevent horizontal overflow */
     .user-dropdown-menu {
         min-width: auto !important;
@@ -1326,37 +1371,96 @@ a.platform-badge.platform-unavailable:hover {
         right: 20px !important;
         left: auto !important;
     }
-    
+
     #user-display-name {
         font-size: 0.85rem;
-        display: none; /* Hide username on mobile */
+        display: none;
+        /* Hide username on mobile */
     }
-    
+
     #logout-btn-desktop {
-        display: none; /* Hide desktop logout button on mobile */
+        display: none;
+        /* Hide desktop logout button on mobile */
     }
-    
+
     /* Mobile logout button styling - matches desktop style */
     nav .mobile-logout {
         margin-top: auto;
         padding-top: 20px;
-        border-top: 1px solid rgba(255,255,255,0.1);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
         color: var(--text-main);
         justify-content: flex-start;
     }
-    
+
     nav .mobile-logout:hover {
         background: rgba(255, 255, 255, 0.1);
         border-color: rgba(255, 255, 255, 0.2);
         transform: scale(1.02);
     }
-    
+
     nav .mobile-logout svg {
         width: 18px;
         height: 18px;
     }
+}
+
+/* TV Show Badge */
+.type-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    z-index: 5;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.type-badge.tv-show {
+    background: linear-gradient(135deg, rgba(156, 39, 176, 0.9), rgba(103, 58, 183, 0.9));
+    border-color: rgba(156, 39, 176, 0.5);
+}
+
+/* Seasons Info in Modal */
+.seasons-info {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    font-weight: 500;
+}
+
+.seasons-info svg {
+    width: 16px;
+    height: 16px;
+    opacity: 0.8;
+}
+
+/* Modal Description - truncated */
+#modal-desc {
+    color: #f5f5f7;
+    margin-bottom: 40px;
+    line-height: 1.6;
+    font-size: 1.05rem;
+    flex: 1;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Widen Genre Dropdown for counts */
+#genre-filter {
+    min-width: 200px;
 }
 
 /* Toast Notifications */
@@ -1375,7 +1479,7 @@ a.platform-badge.platform-unavailable:hover {
     background: var(--modal-bg);
     backdrop-filter: saturate(180%) blur(20px);
     -webkit-backdrop-filter: saturate(180%) blur(20px);
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text-main);
     padding: 16px 20px;
     border-radius: 16px;
@@ -1424,7 +1528,7 @@ a.platform-badge.platform-unavailable:hover {
 
 .toast-close:hover {
     color: var(--text-main);
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .toast.error {
@@ -1466,7 +1570,7 @@ a.platform-badge.platform-unavailable:hover {
         right: 10px;
         left: 10px;
     }
-    
+
     .toast {
         min-width: auto;
         max-width: 100%;
