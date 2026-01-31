@@ -42,6 +42,16 @@ try {
     } else {
         echo "  'total_seasons' column already exists\n";
     }
+
+    // Check if 'user_rating' column exists
+    $stmt = $pdo->query("SHOW COLUMNS FROM movies LIKE 'user_rating'");
+    if ($stmt->rowCount() == 0) {
+        echo "  Adding 'user_rating' column... ";
+        $pdo->exec("ALTER TABLE movies ADD COLUMN `user_rating` ENUM('loved', 'liked', 'disliked') DEFAULT NULL AFTER `total_seasons`");
+        echo "DONE\n";
+    } else {
+        echo "  'user_rating' column already exists\n";
+    }
 } catch (Exception $e) {
     echo "ERROR: " . $e->getMessage() . "\n";
     exit;
