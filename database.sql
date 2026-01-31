@@ -18,6 +18,8 @@ CREATE TABLE IF NOT EXISTS `movies` (
   `description` text,
   `rating` varchar(10) DEFAULT NULL,
   `platforms` text, -- JSON array of platforms
+  `type` varchar(20) DEFAULT 'movie', -- movie, series, episode
+  `total_seasons` int(11) DEFAULT NULL, -- Number of seasons for TV series
   `status` enum('to_watch','watched') DEFAULT 'to_watch',
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),

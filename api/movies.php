@@ -47,12 +47,16 @@ if ($method === 'GET') {
         $stmt = $pdo->prepare("SELECT * FROM movies WHERE user_id = ? ORDER BY created_at DESC");
         $stmt->execute([$user_id]);
         $movies = $stmt->fetchAll();
-        
-        // Decode platforms JSON
+
+        // Decode platforms JSON and normalize field names
         foreach ($movies as &$movie) {
             $movie['platforms'] = json_decode($movie['platforms'], true) ?: [];
+            // Map total_seasons to totalSeasons for JS consistency
+            if (isset($movie['total_seasons'])) {
+                $movie['totalSeasons'] = $movie['total_seasons'];
+            }
         }
-        
+
         echo json_encode($movies);
     } catch (Exception $e) {
         http_response_code(500);
@@ -63,7 +67,7 @@ if ($method === 'GET') {
 // POST: Add a new movie
 elseif ($method === 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
-    
+
     if (!$data || !isset($data['title'])) {
         http_response_code(400);
         echo json_encode(['error' => 'Invalid input']);
@@ -72,13 +76,15 @@ elseif ($method === 'POST') {
 
     try {
         $stmt = $pdo->prepare("
-            INSERT INTO movies (user_id, title, year, genre, image_url, trailer_url, description, rating, platforms, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO movies (user_id, title, year, genre, image_url, trailer_url, description, rating, platforms, status, type, total_seasons)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
-        
+
         $platformsJson = json_encode($data['platforms'] ?? []);
         $status = $data['status'] ?? 'to_watch';
-        
+        $type = $data['type'] ?? 'movie';
+        $totalSeasons = isset($data['totalSeasons']) ? intval($data['totalSeasons']) : null;
+
         $stmt->execute([
             $user_id,
             trim($data['title']),
@@ -89,17 +95,22 @@ elseif ($method === 'POST') {
             $data['description'] ?? '',
             $data['rating'] ?? '',
             $platformsJson,
-            $status
+            $status,
+            $type,
+            $totalSeasons
         ]);
-        
+
         $id = $pdo->lastInsertId();
-        
+
         // Fetch the created movie to return it
         $stmt = $pdo->prepare("SELECT * FROM movies WHERE id = ?");
         $stmt->execute([$id]);
         $movie = $stmt->fetch();
-        $movie['platforms'] = json_decode($movie['platforms'], true);
-        
+        $movie['platforms'] = json_decode($movie['platforms'], true) ?: [];
+        if (isset($movie['total_seasons'])) {
+            $movie['totalSeasons'] = $movie['total_seasons'];
+        }
+
         echo json_encode($movie);
     } catch (Exception $e) {
         http_response_code(500);
@@ -110,7 +121,7 @@ elseif ($method === 'POST') {
 // PUT: Update a movie (status or platforms)
 elseif ($method === 'PUT') {
     $data = json_decode(file_get_contents('php://input'), true);
-    
+
     if (!$data || !isset($data['id'])) {
         http_response_code(400);
         echo json_encode(['error' => 'ID required']);
@@ -130,30 +141,30 @@ elseif ($method === 'PUT') {
         // Build dynamic update query
         $fields = [];
         $params = [];
-        
+
         if (isset($data['status'])) {
             $fields[] = "status = ?";
             $params[] = $data['status'];
         }
-        
+
         if (isset($data['platforms'])) {
             $fields[] = "platforms = ?";
             $params[] = json_encode($data['platforms']);
         }
-        
+
         // Add other fields if needed in future
-        
+
         if (empty($fields)) {
             echo json_encode(['success' => true]); // Nothing to update
             exit;
         }
-        
+
         $params[] = $data['id']; // For WHERE clause
-        
+
         $sql = "UPDATE movies SET " . implode(', ', $fields) . " WHERE id = ?";
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
-        
+
         echo json_encode(['success' => true]);
     } catch (Exception $e) {
         http_response_code(500);
@@ -164,7 +175,7 @@ elseif ($method === 'PUT') {
 // DELETE: Delete a movie
 elseif ($method === 'DELETE') {
     $data = json_decode(file_get_contents('php://input'), true);
-    
+
     if (!$data || !isset($data['id'])) {
         http_response_code(400);
         echo json_encode(['error' => 'ID required']);
@@ -174,7 +185,7 @@ elseif ($method === 'DELETE') {
     try {
         $stmt = $pdo->prepare("DELETE FROM movies WHERE id = ? AND user_id = ?");
         $stmt->execute([$data['id'], $user_id]);
-        
+
         if ($stmt->rowCount() > 0) {
             echo json_encode(['success' => true]);
         } else {
