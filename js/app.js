@@ -656,7 +656,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Optimistic UI Update START ---
         // 1. Close modal immediately
         closeAddModal();
-        const typeLabel = movie.type === 'series' ? 'show' : 'movie';
+        const typeLabel = optimisticMovie.type === 'series' ? 'show' : 'movie';
         showToast(`Adding ${typeLabel}...`, 'info', 2000);
 
         // 2. Add to local list immediately
